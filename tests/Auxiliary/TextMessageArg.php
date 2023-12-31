@@ -33,4 +33,10 @@ class TextMessageArg extends BaseArg
     #[ArgAttr('required', '请输入若干文字')]
     #[ArgAttr('string')]
     public string $text;
+
+    public function __construct(bool $initializationArgProperty = true)
+    {
+        parent::__construct($initializationArgProperty);
+        $this->getArgInfo()->setRules('text', 'max:120');
+    }
 }

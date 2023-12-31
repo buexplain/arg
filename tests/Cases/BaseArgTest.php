@@ -65,7 +65,7 @@ class BaseArgTest extends TestCase
         $msgBag = $text->validate([]);
         $this->assertNotEmpty($msgBag->all());
         //注入数据后再次测试空数据校验
-        $testData = ['text' => 'aaa'];
+        $testData = ['text' => 'a'];
         $text->assign($testData);
         $this->assertTrue($text->text == $testData['text']);
         $msgBag = $text->validate([]);
@@ -75,7 +75,7 @@ class BaseArgTest extends TestCase
         $this->assertEmpty($msgBag->all());
         $this->assertTrue($text->text == $testData['text']);
         //再次注入数据后判断是否符合预期
-        $testData = ['text' => 'bbb'];
+        $testData = ['text' => 'b'];
         $text->assign($testData);
         $this->assertTrue($text->text == $testData['text']);
     }
@@ -92,7 +92,7 @@ class BaseArgTest extends TestCase
         $testData = [
             [
                 'type' => 1,
-                'content' => json_encode(['text' => 'bbb']),
+                'content' => json_encode(['text' => 'a']),
             ],
             [
                 'type' => 2,
@@ -107,6 +107,7 @@ class BaseArgTest extends TestCase
                 $content = new TextMessageArg();
             } else {
                 $content = new FaceMessageArg();
+                $content->getArgInfo()->setRules('face', 'max:2');
             }
             $msgBag = $content->validate(json_decode($message->content, true));
             $this->assertEmpty($msgBag->all());
@@ -141,10 +142,11 @@ class BaseArgTest extends TestCase
     public function testGetArgInfo()
     {
         $text = new TextMessageArg();
+        $this->assertNotEquals($text->getArgInfo()->getRules(), ArgInfoFactory::get(TextMessageArg::class)->getRules());
         $new = spl_object_id($text->getArgInfo());
         $old = spl_object_id(ArgInfoFactory::get(TextMessageArg::class));
         $this->assertTrue($old != $new);
-        self::assertTrue($new == spl_object_id($text->getArgInfo()));
-        self::assertTrue($old == spl_object_id(ArgInfoFactory::get(TextMessageArg::class)));
+        $this->assertTrue($new == spl_object_id($text->getArgInfo()));
+        $this->assertTrue($old == spl_object_id(ArgInfoFactory::get(TextMessageArg::class)));
     }
 }

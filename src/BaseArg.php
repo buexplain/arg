@@ -35,10 +35,12 @@ use stdClass;
 class BaseArg implements JsonSerializable
 {
     /**
+     * static类的反射信息
+     * 该属性必须是私有的，如果子类对该属性做变更，则必须进行克隆
      * @var ArgInfo
      */
     #[IgnoreAttr]
-    protected ArgInfo $argInfo;
+    private ArgInfo $argInfo;
 
     /**
      * @param bool $initializationArgProperty 是否自动初始化子类中的继承了本类的属性

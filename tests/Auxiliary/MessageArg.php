@@ -43,10 +43,11 @@ class MessageArg extends BaseArg
      */
     #[ArgAttr('required')]
     #[ArgAttr('string')]
+    #[ArgAttr('json')]
     public string $content;
 
     /**
-     * content字段实例化后的对象，无需注解
+     * content字段实例化后的对象，无需被校验
      * @var TextMessageArg|FaceMessageArg
      */
     #[IgnoreAttr]
