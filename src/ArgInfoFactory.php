@@ -38,6 +38,7 @@ class ArgInfoFactory
             return $argInfo;
         }
         $ref = new ReflectionClass($class);
+        //遍历类的所有属性
         foreach ($ref->getProperties() as $property) {
             //跳过不需要处理的字段
             if (!empty($property->getAttributes(IgnoreAttr::class))) {
@@ -54,7 +55,7 @@ class ArgInfoFactory
             } elseif ($refType instanceof ReflectionUnionType) {
                 foreach ($refType->getTypes() as $type) {
                     $argInfo->setOtherArg($property->getName(), $type->getName());
-                    if (is_subclass_of($type->getName(), self::class)) {
+                    if (is_subclass_of($type->getName(), BaseArg::class)) {
                         $argInfo->setOtherArg($property->getName(), $type->getName());
                     }
                 }
@@ -70,14 +71,21 @@ class ArgInfoFactory
                     $argInfo->setMessages($property->getName(), $argAttr->rule, $argAttr->message);
                 }
             }
-            //收集每个属性的setter方法
-            $method = 'set' . implode(array_map(function ($word) {
-                    return ucfirst($word);
-                }, explode('_', $property->getName())));
-            if (method_exists(static::class, $method)) {
-                $argInfo->setSetter($property->getName(), $method);
+            //收集每个属性的setter、getter方法
+            $ter = implode(array_map(function ($word) {
+                return ucfirst($word);
+            }, explode('_', $property->getName())));
+            $setter = 'set' . $ter;
+            if (method_exists($class, $setter)) {
+                $argInfo->setSetter($property->getName(), $setter);
             } else {
                 $argInfo->setSetter($property->getName(), '');
+            }
+            $getter = 'get' . $ter;
+            if (method_exists($class, $getter)) {
+                $argInfo->setGetter($property->getName(), $getter);
+            } else {
+                $argInfo->setGetter($property->getName(), '');
             }
         }
         return $argInfo;

@@ -30,6 +30,8 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class BaseArgTest extends TestCase
 {
+    protected static array $emptyData = [];
+
     /**
      * @return void
      * @throws ContainerExceptionInterface
@@ -39,14 +41,14 @@ class BaseArgTest extends TestCase
     {
         //先测试空的数据，进行校验，因为数据是required，所以校验肯定失败
         $face = new FaceMessageArg();
-        $msgBag = $face->validate([]);
+        $msgBag = $face->validate(self::$emptyData);
         $this->assertNotEmpty($msgBag->all());
         //构造有效数据进行校验，测试校验成功
         $testData = ['face' => ['smile.gif', '666.gif']];
         $msgBag = $face->validate($testData);
         $this->assertEmpty($msgBag->all());
         //再次校验空数据，依然失败
-        $msgBag = $face->validate([]);
+        $msgBag = $face->validate(self::$emptyData);
         $this->assertNotEmpty($msgBag->all());
         //将有效数据注入到对象中，序列化对象，比较序列化的数据与有效数据是否一致
         $face->assign($testData);
@@ -62,13 +64,13 @@ class BaseArgTest extends TestCase
     {
         $text = new TextMessageArg();
         //直接测试空数据校验
-        $msgBag = $text->validate([]);
+        $msgBag = $text->validate(self::$emptyData);
         $this->assertNotEmpty($msgBag->all());
         //注入数据后再次测试空数据校验
         $testData = ['text' => 'a'];
         $text->assign($testData);
         $this->assertTrue($text->text == $testData['text']);
-        $msgBag = $text->validate([]);
+        $msgBag = $text->validate(self::$emptyData);
         $this->assertNotEmpty($msgBag->all());
         //测试合法数据校验
         $msgBag = $text->validate($testData);
@@ -109,7 +111,8 @@ class BaseArgTest extends TestCase
                 $content = new FaceMessageArg();
                 $content->getArgInfo()->setRules('face', 'max:2');
             }
-            $msgBag = $content->validate(json_decode($message->content, true));
+            $contentData = json_decode($message->content, true);
+            $msgBag = $content->validate($contentData);
             $this->assertEmpty($msgBag->all());
             $message->contentObj = $content;
             $this->assertEquals(json_encode($datum), json_encode($message));

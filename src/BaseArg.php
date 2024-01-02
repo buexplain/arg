@@ -116,13 +116,13 @@ class BaseArg implements JsonSerializable
     }
 
     /**
-     * 执行根据校验规则，执行校验逻辑
+     * 执行根据校验规则，执行校验逻辑，如果中途遇到需要解码的数据，会自动按json进行解码
      * @param array $data 被校验的数据
      * @return MessageBag
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function validate(array $data): MessageBag
+    public function validate(array &$data): MessageBag
     {
         /**
          * @var ValidatorInterface $validator
@@ -143,6 +143,7 @@ class BaseArg implements JsonSerializable
                     $nextData = $data[$property];
                     if (!is_array($nextData)) {
                         $nextData = json_decode($nextData, true);
+                        $data[$property] = $nextData;
                     }
                     $otherMessageBag[] = $this->{$property}->validate($nextData);
                 }
@@ -164,8 +165,13 @@ class BaseArg implements JsonSerializable
         $ret = new stdClass();
         foreach ($this->argInfo->getTypes() as $property => $discard) {
             try {
-                $ret->{$property} = $this->{$property};
-            } catch (Error $throwable) {
+                $method = $this->argInfo->getGetter($property);
+                if ($method) {
+                    $ret->{$property} = call_user_func_array([$this, $method], []);
+                } else {
+                    $ret->{$property} = $this->{$property};
+                }
+            } catch (Error) {
                 //如果字段未被初始化，则会报错，这里直接屏蔽错误即可
             }
         }

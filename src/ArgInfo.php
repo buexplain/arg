@@ -42,6 +42,11 @@ class ArgInfo
     protected array $setter = [];
 
     /**
+     * @var array 属性的getter方法
+     */
+    protected array $getter = [];
+
+    /**
      * @var array 属性的类型是继承了Arg类的类
      */
     protected array $otherArg = [];
@@ -85,6 +90,16 @@ class ArgInfo
     public function setSetter(string $property, string $setter): void
     {
         $this->setter[$property] = $setter;
+    }
+
+    public function getGetter(string $property): string
+    {
+        return $this->getter[$property];
+    }
+
+    public function setGetter(string $property, string $getter): void
+    {
+        $this->getter[$property] = $getter;
     }
 
     public function getOtherArg(): array

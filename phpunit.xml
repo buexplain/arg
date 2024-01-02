@@ -4,6 +4,9 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
          cacheDirectory=".phpunit.cache">
     <testsuites>
+        <testsuite name="GSetterArg Tests">
+            <file>./tests/Cases/GSetterArgTest.php</file>
+        </testsuite>
         <testsuite name="ArgAttr Tests">
             <file>./tests/Cases/ArgAttrTest.php</file>
         </testsuite>
