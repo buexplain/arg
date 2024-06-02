@@ -34,9 +34,9 @@ class TextMessageArg extends BaseArg
     #[ArgAttr('string')]
     public string $text;
 
-    public function __construct(bool $initializationArgProperty = true)
+    public function __construct(array $parameter)
     {
-        parent::__construct($initializationArgProperty);
+        parent::__construct($parameter);
         $this->getArgInfo()->setRules('text', 'max:120');
     }
 }

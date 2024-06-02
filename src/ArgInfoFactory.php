@@ -20,8 +20,6 @@ declare(strict_types=1);
 namespace Arg;
 
 use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionUnionType;
 
 class ArgInfoFactory
 {
@@ -44,22 +42,8 @@ class ArgInfoFactory
             if (!empty($property->getAttributes(IgnoreAttr::class))) {
                 continue;
             }
-            //收集每个属性的类型
-            //收集当前类的属性中类型是Arg类型的属性
-            $refType = $property->getType();
-            if ($refType instanceof ReflectionNamedType) {
-                $argInfo->setTypes($property->getName(), $refType->getName());
-                if (is_subclass_of($refType->getName(), BaseArg::class)) {
-                    $argInfo->setOtherArg($property->getName(), $refType->getName());
-                }
-            } elseif ($refType instanceof ReflectionUnionType) {
-                foreach ($refType->getTypes() as $type) {
-                    $argInfo->setOtherArg($property->getName(), $type->getName());
-                    if (is_subclass_of($type->getName(), BaseArg::class)) {
-                        $argInfo->setOtherArg($property->getName(), $type->getName());
-                    }
-                }
-            }
+            //收集每个属性
+            $argInfo->setProperties(new ArgProperty($ref, $property));
             //收集每个属性的校验信息
             foreach ($property->getAttributes(ArgAttr::class) as $attribute) {
                 /**
@@ -70,22 +54,6 @@ class ArgInfoFactory
                 if (!is_null($argAttr->message)) {
                     $argInfo->setMessages($property->getName(), $argAttr->rule, $argAttr->message);
                 }
-            }
-            //收集每个属性的setter、getter方法
-            $ter = implode(array_map(function ($word) {
-                return ucfirst($word);
-            }, explode('_', $property->getName())));
-            $setter = 'set' . $ter;
-            if (method_exists($class, $setter)) {
-                $argInfo->setSetter($property->getName(), $setter);
-            } else {
-                $argInfo->setSetter($property->getName(), '');
-            }
-            $getter = 'get' . $ter;
-            if (method_exists($class, $getter)) {
-                $argInfo->setGetter($property->getName(), $getter);
-            } else {
-                $argInfo->setGetter($property->getName(), '');
             }
         }
         return $argInfo;

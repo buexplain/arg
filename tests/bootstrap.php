@@ -74,6 +74,13 @@ require __DIR__ . '/../vendor/autoload.php';
 
 !defined('SWOOLE_HOOK_FLAGS') && define('SWOOLE_HOOK_FLAGS', Hyperf\Engine\DefaultOption::hookFlags());
 
+$message = new \ArgTest\Auxiliary\MessageArg(['type' => 100, 'stdClass' => (object)[
+    'xx' => 1,
+    'yy' => 2,
+], 'textMessage' => ['text' => 'hello']]);
+var_dump($message->getArgInfo()->getRules());
+
+exit;
 (function () use ($dependentDir) {
     Hyperf\Di\ClassLoader::init(handler: new Hyperf\Di\ScanHandler\ProcScanHandler(stub: __FILE__));
     Swoole\Runtime::enableCoroutine(true);

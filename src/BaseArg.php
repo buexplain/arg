@@ -19,15 +19,16 @@ declare(strict_types=1);
 
 namespace Arg;
 
-use Error;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\Contract\MessageBag;
 use Hyperf\Contract\ValidatorInterface;
 use Hyperf\Validation\Contract\ValidatorFactoryInterface;
+use InvalidArgumentException;
 use JsonSerializable;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use stdClass;
+use TypeError;
 
 /**
  * 参数描述类的基类
@@ -43,14 +44,17 @@ class BaseArg implements JsonSerializable
     private ArgInfo $argInfo;
 
     /**
-     * @param bool $initializationArgProperty 是否自动初始化子类中的继承了本类的属性
+     * @param array $parameter
+     * @throws InvalidArgumentException
      */
-    public function __construct(bool $initializationArgProperty = true)
+    public function __construct(array $parameter)
     {
         $this->argInfo = ArgInfoFactory::get(static::class);
-        if ($initializationArgProperty) {
-            foreach ($this->argInfo->getOtherArg() as $property => $class) {
-                $this->{$property} = new $class();
+        $this->assign($parameter);
+        foreach ($this->argInfo->getProperties() as $property) {
+            if ($property->extendBaseArg) {
+                $class = $property->defaultValue;
+                $this->{$property->property->getName()} = new $class($parameter[$property->property->getName()] ?? []);
             }
         }
     }
@@ -69,89 +73,79 @@ class BaseArg implements JsonSerializable
 
     /**
      * 注入数据到对象本身的属性中
-     * @param array $data
+     * @param array $parameter
      * @return void
      */
-    public function assign(array $data): void
+    protected function assign(array $parameter): void
     {
-        foreach ($this->argInfo->getTypes() as $property => $types) {
-            if (isset($data[$property])) {
-                $v = $data[$property];
-                //先转成目标属性的类型
-                foreach ($types as $type) {
-                    if (is_subclass_of($type, self::class)) {
-                        //继承了本类的属性，调用其自身的注入函数
-                        if (!is_array($v)) {
-                            $v = json_decode($v, true);
-                        }
-                        $this->{$property}->assign($v);
-                        continue 2;
-                    } elseif ($type === 'string') {
-                        $v = trim((string)$v);
-                        break;
-                    } elseif ($type === 'integer' || $type === 'int') {
-                        $v = filter_var($v, FILTER_VALIDATE_INT);
-                        break;
-                    } elseif ($type === 'double') {
-                        $v = filter_var($v, FILTER_VALIDATE_FLOAT);
-                        break;
-                    } elseif ($type === 'boolean') {
-                        $v = filter_var($v, FILTER_VALIDATE_BOOLEAN);
-                        break;
-                    } elseif ($type === 'array') {
-                        $v = (array)$v;
-                        break;
-                    }
-                }
+        foreach ($this->argInfo->getProperties() as $property) {
+            if ($property->extendBaseArg) {
+                continue;
+            }
+            if (isset($parameter[$property->property->getName()])) {
+                $v = $parameter[$property->property->getName()];
                 //优先使用setter方法进行注入
-                $method = $this->argInfo->getSetter($property);
-                if ($method) {
-                    call_user_func_array([$this, $method], [$v]);
-                    continue;
+                try {
+                    if ($property->setter) {
+                        call_user_func_array([$this, $property->setter], [$v]);
+                    } else {
+                        //没有setter方法，直接赋值，这里可能会发生错误
+                        if ($property->defaultValue instanceof StdClass) {
+                            $this->{$property->property->getName()} = (object)$v;
+                        } else {
+                            $this->{$property->property->getName()} = $v;
+                        }
+                    }
+                } catch (TypeError $error) {
+                    throw new InvalidArgumentException($error->getMessage());
                 }
-                //没有setter方法，直接赋值，这里可能会发生错误
-                $this->{$property} = $v;
+            } else if ($property->property->isInitialized($this) === false) {
+                if ($property->defaultValue instanceof StdClass) {
+                    $this->{$property->property->getName()} = new stdClass();
+                } else {
+                    $this->{$property->property->getName()} = $property->defaultValue;
+                }
             }
         }
     }
 
     /**
-     * 执行根据校验规则，执行校验逻辑，如果中途遇到需要解码的数据，会自动按json进行解码
-     * @param array $data 被校验的数据
+     * 根据校验规则，执行校验逻辑
      * @return MessageBag
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function validate(array &$data): MessageBag
+    public function validate(): MessageBag
     {
         /**
          * @var ValidatorInterface $validator
          */
+        $data = [];
+        foreach ($this->argInfo->getProperties() as $property) {
+            if ($property->extendBaseArg === false) {
+                $data[$property->property->getName()] = $this->{$property->property->getName()};
+            }
+        }
         $validator = ApplicationContext::getContainer()->get(ValidatorFactoryInterface::class)->make(
             $data,
             $this->argInfo->getRules(),
             $this->argInfo->getMessages()
         );
+        $messageBag = $validator->getMessageBag();
         /**
          * @var MessageBag[] $otherMessageBag
          */
-        $otherMessageBag = [];
         if ($validator->passes()) {
             //校验通过，继续校验本对象的Arg类型的属性
-            foreach ($this->argInfo->getOtherArg() as $property => $class) {
-                if (isset($data[$property])) {
-                    $nextData = $data[$property];
-                    if (!is_array($nextData)) {
-                        $nextData = json_decode($nextData, true);
-                        $data[$property] = $nextData;
-                    }
-                    $otherMessageBag[] = $this->{$property}->validate($nextData);
+            $otherMessageBag = [];
+            foreach ($this->argInfo->getProperties() as $property) {
+                if ($property->extendBaseArg) {
+                    $otherMessageBag[] = $this->{$property->property->getName()}->validate();
                 }
             }
-        }
-        $messageBag = $validator->getMessageBag();
-        foreach ($otherMessageBag as $item) {
-            $messageBag->merge($item);
+            foreach ($otherMessageBag as $item) {
+                $messageBag->merge($item);
+            }
         }
         return $messageBag;
     }
@@ -163,16 +157,11 @@ class BaseArg implements JsonSerializable
     public function jsonSerialize(): stdClass
     {
         $ret = new stdClass();
-        foreach ($this->argInfo->getTypes() as $property => $discard) {
-            try {
-                $method = $this->argInfo->getGetter($property);
-                if ($method) {
-                    $ret->{$property} = call_user_func_array([$this, $method], []);
-                } else {
-                    $ret->{$property} = $this->{$property};
-                }
-            } catch (Error) {
-                //如果字段未被初始化，则会报错，这里直接屏蔽错误即可
+        foreach ($this->argInfo->getProperties() as $property) {
+            if ($property->getter) {
+                $ret->{$property->property->getName()} = call_user_func_array([$this, $property->getter], []);
+            } else {
+                $ret->{$property->property->getName()} = $this->{$property->property->getName()};
             }
         }
         return $ret;

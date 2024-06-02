@@ -21,7 +21,6 @@ namespace ArgTest\Auxiliary;
 
 use Arg\ArgAttr;
 use Arg\BaseArg;
-use Arg\IgnoreAttr;
 
 /**
  * 消息体
@@ -36,20 +35,15 @@ class MessageArg extends BaseArg
     #[ArgAttr('integer')]
     #[ArgAttr('in:1,2')]
     public int $type;
+    /**
+     * 文本消息
+     * @var TextMessageArg
+     */
+    public TextMessageArg $textMessage;
 
     /**
-     * 消息内容
-     * @var string
+     * 表情消息
+     * @var FaceMessageArg
      */
-    #[ArgAttr('required')]
-    #[ArgAttr('string')]
-    #[ArgAttr('json')]
-    public string $content;
-
-    /**
-     * content字段实例化后的对象，无需被校验
-     * @var TextMessageArg|FaceMessageArg
-     */
-    #[IgnoreAttr]
-    public TextMessageArg|FaceMessageArg $contentObj;
+    public FaceMessageArg $faceMessage;
 }

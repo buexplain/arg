@@ -9,12 +9,11 @@ class GSetterArgTest extends TestCase
 {
     public function testGSetterArg()
     {
-        $t = new GSetterArg();
+        $t = new GSetterArg([]);
         $t->data = 'data';
         $testData = json_decode(json_encode($t), true);
         $this->assertNotEquals($testData['data'], $t->data);
         $testData = ['data' => 'data'];
-        $t->assign($testData);
         $this->assertNotEquals($testData['data'], $t->data);
     }
 }

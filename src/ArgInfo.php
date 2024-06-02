@@ -21,10 +21,11 @@ namespace Arg;
 
 class ArgInfo
 {
+
     /**
-     * @var array 属性的类型
+     * @var array|ArgProperty[]
      */
-    protected array $types = [];
+    protected array $properties = [];
 
     /**
      * @var array 属性的校验规则
@@ -37,29 +38,16 @@ class ArgInfo
     protected array $messages = [];
 
     /**
-     * @var array 属性的setter方法
+     * @return array|ArgProperty[]
      */
-    protected array $setter = [];
-
-    /**
-     * @var array 属性的getter方法
-     */
-    protected array $getter = [];
-
-    /**
-     * @var array 属性的类型是继承了Arg类的类
-     */
-    protected array $otherArg = [];
-
-
-    public function getTypes(): array
+    public function getProperties(): array
     {
-        return $this->types;
+        return $this->properties;
     }
 
-    public function setTypes(string $property, string $type): void
+    public function setProperties(ArgProperty $argProperty): void
     {
-        $this->types[$property][] = $type;
+        $this->properties[$argProperty->property->getName()] = $argProperty;
     }
 
     public function getRules(): array
@@ -82,33 +70,10 @@ class ArgInfo
         $this->messages[$property . '.' . $rule] = $message;
     }
 
-    public function getSetter(string $property): string
+    final public function __clone(): void
     {
-        return $this->setter[$property];
-    }
-
-    public function setSetter(string $property, string $setter): void
-    {
-        $this->setter[$property] = $setter;
-    }
-
-    public function getGetter(string $property): string
-    {
-        return $this->getter[$property];
-    }
-
-    public function setGetter(string $property, string $getter): void
-    {
-        $this->getter[$property] = $getter;
-    }
-
-    public function getOtherArg(): array
-    {
-        return $this->otherArg;
-    }
-
-    public function setOtherArg(string $property, string $type): void
-    {
-        $this->otherArg[$property] = $type;
+        foreach ($this->properties as $index => $property) {
+            $this->properties[$index] = clone $property;
+        }
     }
 }
