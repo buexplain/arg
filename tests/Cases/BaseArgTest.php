@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace ArgTest\Cases;
 
 use Arg\ArgInfoFactory;
+use Arg\Contract\InvalidArgumentException;
 use ArgTest\Auxiliary\FaceMessageArg;
 use ArgTest\Auxiliary\MessageArg;
 use ArgTest\Auxiliary\SendGroupMessageArg;
@@ -35,121 +36,95 @@ class BaseArgTest extends TestCase
     /**
      * @return void
      * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws NotFoundExceptionInterface|InvalidArgumentException
      */
     public function testFaceMessageArg()
     {
         //先测试空的数据，进行校验，因为数据是required，所以校验肯定失败
-        $face = new FaceMessageArg();
-        $msgBag = $face->validate(self::$emptyData);
+        $face = new FaceMessageArg([]);
+        $msgBag = $face->validate();
         $this->assertNotEmpty($msgBag->all());
         //构造有效数据进行校验，测试校验成功
-        $testData = ['face' => ['smile.gif', '666.gif']];
-        $msgBag = $face->validate($testData);
+        $face = new FaceMessageArg(['face' => ['smile.gif', '666.gif']]);
+        $msgBag = $face->validate();
         $this->assertEmpty($msgBag->all());
-        //再次校验空数据，依然失败
-        $msgBag = $face->validate(self::$emptyData);
-        $this->assertNotEmpty($msgBag->all());
-        //将有效数据注入到对象中，序列化对象，比较序列化的数据与有效数据是否一致
-        $face->assign($testData);
-        $this->assertTrue(json_decode(json_encode($face), true) === $testData);
     }
 
     /**
      * @return void
      * @throws ContainerExceptionInterface
+     * @throws InvalidArgumentException
      * @throws NotFoundExceptionInterface
      */
     public function testTextMessageArg()
     {
-        $text = new TextMessageArg();
+        $text = new TextMessageArg([]);
         //直接测试空数据校验
-        $msgBag = $text->validate(self::$emptyData);
-        $this->assertNotEmpty($msgBag->all());
-        //注入数据后再次测试空数据校验
-        $testData = ['text' => 'a'];
-        $text->assign($testData);
-        $this->assertTrue($text->text == $testData['text']);
-        $msgBag = $text->validate(self::$emptyData);
+        $msgBag = $text->validate();
         $this->assertNotEmpty($msgBag->all());
         //测试合法数据校验
-        $msgBag = $text->validate($testData);
+        $testData = ['text' => 'a'];
+        $text = new TextMessageArg($testData);
+        $msgBag = $text->validate();
         $this->assertEmpty($msgBag->all());
-        $this->assertTrue($text->text == $testData['text']);
-        //再次注入数据后判断是否符合预期
-        $testData = ['text' => 'b'];
-        $text->assign($testData);
         $this->assertTrue($text->text == $testData['text']);
     }
 
     /**
      * @return void
      * @throws ContainerExceptionInterface
+     * @throws InvalidArgumentException
      * @throws NotFoundExceptionInterface
      */
     public function testMessageArg()
     {
-        $message = new MessageArg();
-        $this->assertEquals('{}', json_encode($message));
         $testData = [
             [
                 'type' => 1,
-                'content' => json_encode(['text' => 'a']),
+                'textMessage' => ['text' => 'a'],
             ],
             [
                 'type' => 2,
-                'content' => json_encode(['face' => ['a.gif', 'b.gif']]),
+                'faceMessage' => ['face' => ['a.gif', 'b.gif']],
             ]
         ];
         foreach ($testData as $datum) {
-            $msgBag = $message->validate($datum);
+            $message = new MessageArg($datum);
+            $msgBag = $message->validate();
             $this->assertEmpty($msgBag->all());
-            $message->assign($datum);
-            if ($message->type === 1) {
-                $content = new TextMessageArg();
-            } else {
-                $content = new FaceMessageArg();
-                $content->getArgInfo()->setRules('face', 'max:2');
-            }
-            $contentData = json_decode($message->content, true);
-            $msgBag = $content->validate($contentData);
-            $this->assertEmpty($msgBag->all());
-            $message->contentObj = $content;
-            $this->assertEquals(json_encode($datum), json_encode($message));
         }
     }
 
     /**
      * @return void
      * @throws ContainerExceptionInterface
+     * @throws InvalidArgumentException
      * @throws NotFoundExceptionInterface
      */
     public function testSendGroupMessageArg()
     {
-        $sendGroupMessage = new SendGroupMessageArg();
-        $this->assertEquals('{"message":{}}', json_encode($sendGroupMessage));
         $testData = [
             'group_id' => 1,
             'sender' => '王富贵',
             'message' => [
                 'type' => 2,
-                'content' => json_encode(['face' => ['a.gif', 'b.gif']]),
+                'faceMessage' => ['face' => ['a.gif', 'b.gif']],
             ]
         ];
-        $msgBag = $sendGroupMessage->validate($testData);
+        $sendGroupMessage = new SendGroupMessageArg($testData);
+        $msgBag = $sendGroupMessage->validate();
         $this->assertEmpty($msgBag->all());
-        $sendGroupMessage->assign($testData);
-        $this->assertEquals(json_encode($testData), json_encode($sendGroupMessage));
     }
 
+    /**
+     * @return void
+     * @throws InvalidArgumentException
+     */
     public function testGetArgInfo()
     {
-        $text = new TextMessageArg();
-        $this->assertNotEquals($text->getArgInfo()->getRules(), ArgInfoFactory::get(TextMessageArg::class)->getRules());
-        $new = spl_object_id($text->getArgInfo());
-        $old = spl_object_id(ArgInfoFactory::get(TextMessageArg::class));
+        $face = new FaceMessageArg([]);
+        $new = spl_object_id($face->getArgInfo());
+        $old = spl_object_id(ArgInfoFactory::get(FaceMessageArg::class));
         $this->assertTrue($old != $new);
-        $this->assertTrue($new == spl_object_id($text->getArgInfo()));
-        $this->assertTrue($old == spl_object_id(ArgInfoFactory::get(TextMessageArg::class)));
     }
 }

@@ -17,24 +17,17 @@
 
 declare(strict_types=1);
 
-namespace ArgTest\Auxiliary;
+namespace Arg;
 
-use Arg\BaseArg;
+use Attribute;
 
 /**
- * 测试get、set方法
+ * 描述参数的校验规则的注解
  */
-class GSetterArg extends BaseArg
+#[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
+class ArgValidationAttr
 {
-    public string $data;
-
-    public function getData(): string
+    public function __construct(public string $rule, public string|null $message = null)
     {
-        return $this->data . '干扰数据';
-    }
-
-    public function setData(string $data): void
-    {
-        $this->data = $data . '干扰数据';
     }
 }

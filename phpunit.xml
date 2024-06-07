@@ -4,13 +4,19 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
          cacheDirectory=".phpunit.cache">
     <testsuites>
-        <testsuite name="GSetterArg Tests">
-            <file>./tests/Cases/GSetterArgTest.php</file>
+        <testsuite name="ArgDefaultValueTest Tests">
+            <file>./tests/Cases/ArgDefaultValueTest.php</file>
         </testsuite>
-        <testsuite name="ArgAttr Tests">
-            <file>./tests/Cases/ArgAttrTest.php</file>
+        <testsuite name="ArgGetSetterTest Tests">
+            <file>./tests/Cases/ArgGetSetterTest.php</file>
         </testsuite>
-        <testsuite name="BaseArg Tests">
+        <testsuite name="ArgValidationAttrTest Tests">
+            <file>./tests/Cases/ArgValidationAttrTest.php</file>
+        </testsuite>
+        <testsuite name="ArgValidationTest Tests">
+            <file>./tests/Cases/ArgValidationTest.php</file>
+        </testsuite>
+        <testsuite name="BaseArgTest Tests">
             <file>./tests/Cases/BaseArgTest.php</file>
         </testsuite>
     </testsuites>

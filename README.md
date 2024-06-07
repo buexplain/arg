@@ -10,38 +10,39 @@
 以注册接口为例子，做个简单的示例。
 
 第一步：构造一个注册接口需要的参数描述。
+
 ```php
 <?php
 
 namespace App\Arg;
 
-use Arg\ArgAttr;
-use Arg\BaseArg;
+use Arg\ArgValidationAttr;
+use Arg\BaseArgForHyperf;
 
 /**
  * 注册一个用户
  */
-class RegisterArg extends BaseArg
+class RegisterArg extends BaseArgForHyperf
 {
     /**
      * @var string 账号
      */
-    #[ArgAttr('required')]
-    #[ArgAttr('string')]
+    #[ArgValidationAttr('required')]
+    #[ArgValidationAttr('string')]
     public string $account;
 
     /**
      * @var string 密码
      */
-    #[ArgAttr('required')]
-    #[ArgAttr('string')]
+    #[ArgValidationAttr('required')]
+    #[ArgValidationAttr('string')]
     public string $password;
 
     /**
      * @var string 验证码
      */
-    #[ArgAttr('required')]
-    #[ArgAttr('string')]
+    #[ArgValidationAttr('required')]
+    #[ArgValidationAttr('string')]
     public string $verification_code;
 }
 ```
@@ -70,11 +71,9 @@ class IndexController extends AbstractController
     public function index(): array
     {
         //初始化参数类
-        $registerArg = new RegisterArg();
-        //获取客户端发送的数据
-        $data = $this->request->all();
+        $registerArg = new RegisterArg($this->request->all());
         //校验数据
-        $msgBag = $registerArg->validate($data);
+        $msgBag = $registerArg->validate();
         if ($msgBag->isNotEmpty()) {
             //校验失败，返回错误信息
             return [
@@ -82,8 +81,6 @@ class IndexController extends AbstractController
                 'message' => $msgBag->first(),
             ];
         }
-        //校验成功，将客户端数据注入到参数对象中
-        $registerArg->assign($data);
         //调用service层的注册逻辑，执行注册动作，并返回注册结果
         return [
             'code' => 0,

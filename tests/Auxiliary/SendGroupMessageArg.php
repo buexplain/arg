@@ -19,32 +19,41 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\ArgAttr;
-use Arg\BaseArg;
+use Arg\ArgValidationAttr;
+use Arg\BaseArgForHyperf;
+use Arg\Contract\InvalidArgumentException;
 
 /**
  * 发送群消息
  */
-class SendGroupMessageArg extends BaseArg
+class SendGroupMessageArg extends BaseArgForHyperf
 {
     /**
      * @var int 群id
      */
-    #[ArgAttr('required', '请输入群id')]
-    #[ArgAttr('integer')]
+    #[ArgValidationAttr('required', '请输入群id')]
+    #[ArgValidationAttr('min:1', '请输入群id')]
     public int $group_id;
 
     /**
      * @var string 发送消息的人
      */
-    #[ArgAttr('required')]
-    #[ArgAttr('string')]
+    #[ArgValidationAttr('required')]
+    #[ArgValidationAttr('max:7', '发送者不能超过7个字符')]
     public string $sender;
 
     /**
      * @var MessageArg 发送的消息
      */
-    #[ArgAttr('required')]
-    #[ArgAttr('array', '数组，必须是数组，请注意，我只接收数组！！！')]
     public MessageArg $message;
+
+    /**
+     * @param array $parameter
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    public function setMessage(array $parameter): void
+    {
+        $this->message = new MessageArg($parameter);
+    }
 }

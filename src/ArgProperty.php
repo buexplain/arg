@@ -35,6 +35,16 @@ class ArgProperty
     public string $setter = '';
     public string $getter = '';
 
+    /**
+     * @var array 属性的校验规则
+     */
+    protected array $rules = [];
+
+    /**
+     * @var array 属性的校验规则对应的错误时提示信息
+     */
+    protected array $messages = [];
+
     public function __construct(ReflectionClass $class, ReflectionProperty $property)
     {
         $this->class = $class;
@@ -50,12 +60,49 @@ class ArgProperty
         }
         //初始化属性的get set 函数
         $this->initGetSet();
+        //初始化属性的校验信息
+        $this->initRules();
+    }
+
+    protected function initRules(): void
+    {
+        //收集每个属性的校验信息
+        foreach ($this->property->getAttributes(ArgValidationAttr::class) as $attribute) {
+            /**
+             * @var ArgValidationAttr $argAttr
+             */
+            $argAttr = $attribute->newInstance();
+            $this->setRules($argAttr->rule);
+            if (!is_null($argAttr->message)) {
+                $this->setMessages($argAttr->rule, $argAttr->message);
+            }
+        }
+    }
+
+    public function getRules(): array
+    {
+        return $this->rules;
+    }
+
+    public function setRules(mixed $rule): void
+    {
+        $this->rules[] = $rule;
+    }
+
+    public function getMessages(): array
+    {
+        return $this->messages;
+    }
+
+    public function setMessages(string $rule, string $message): void
+    {
+        $this->messages[$this->property->getName() . '.' . $rule] = $message;
     }
 
     protected function initNamedType(): void
     {
         $refType = $this->property->getType();
-        if (is_subclass_of($refType->getName(), BaseArg::class)) {
+        if (is_subclass_of($refType->getName(), AbstractArg::class)) {
             $this->extendBaseArg = true;
             $this->defaultValue = $refType->getName();
         } else {
@@ -70,7 +117,7 @@ class ArgProperty
         $this->extendBaseArg = false;
         $nullType = '';
         foreach ($refType->getTypes() as $type) {
-            if ($this->extendBaseArg === false && is_subclass_of($type->getName(), BaseArg::class)) {
+            if ($this->extendBaseArg === false && is_subclass_of($type->getName(), AbstractArg::class)) {
                 $this->extendBaseArg = true;
                 $this->defaultValue = $type->getName();
                 break;
@@ -112,17 +159,17 @@ class ArgProperty
     {
         if ($type === 'string') {
             $value = '';
-        } elseif ($type === 'integer' || $type === 'int') {
+        } elseif ($type === 'int' || $type === 'integer') {
             $value = 0;
-        } elseif ($type === 'double') {
+        } elseif ($type === 'float' || $type === 'double') {
             $value = 0;
-        } elseif ($type === 'boolean') {
+        } elseif ($type === 'bool' || $type === 'boolean') {
             $value = false;
         } elseif ($type === 'array') {
             $value = [];
         } elseif ($type === 'mixed') {
             $value = null;
-        } elseif ($type === 'stdClass') {
+        } elseif ($type === 'stdClass' || $type === 'object') {
             $value = new StdClass();
         } elseif ($type === 'null') {
             $value = null;

@@ -19,24 +19,23 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\ArgAttr;
-use Arg\BaseArg;
+use Arg\ArgValidationAttr;
+use Arg\BaseArgForHyperf;
 
 /**
  * 文本消息
  */
-class TextMessageArg extends BaseArg
+class TextMessageArg extends BaseArgForHyperf
 {
     /**
      * @var string
      */
-    #[ArgAttr('required', '请输入若干文字')]
-    #[ArgAttr('string')]
+    #[ArgValidationAttr('required', '不能发送空白信息')]
     public string $text;
 
     public function __construct(array $parameter)
     {
         parent::__construct($parameter);
-        $this->getArgInfo()->setRules('text', 'max:120');
+        $this->getArgInfo()->getProperty('text')->setRules('max:120');
     }
 }

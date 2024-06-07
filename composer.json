@@ -12,10 +12,7 @@
     "php"
   ],
   "require": {
-    "php": ">=8.0",
-    "hyperf/validation": "^3.1",
-    "hyperf/context": "^3.1",
-    "hyperf/contract": "^3.1"
+    "php": ">=8.0"
   },
   "minimum-stability": "stable",
   "autoload": {
@@ -29,9 +26,12 @@
     }
   },
   "require-dev": {
+    "hyperf/validation": "^3.1",
+    "hyperf/context": "^3.1",
+    "hyperf/contract": "^3.1",
     "phpunit/phpunit": "^10.0",
     "hyperf/testing": "^3.1",
-    "swoole/ide-helper": "^5.0",
+    "swoole/ide-helper": "^5.1",
     "hyperf/di": "^3.1",
     "hyperf/framework": "^3.1",
     "hyperf/config": "^3.1",

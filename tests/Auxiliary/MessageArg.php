@@ -19,31 +19,32 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\ArgAttr;
-use Arg\BaseArg;
+use Arg\ArgValidationAttr;
+use Arg\BaseArgForHyperf;
 
 /**
  * 消息体
  */
-class MessageArg extends BaseArg
+class MessageArg extends BaseArgForHyperf
 {
     /**
-     * 消息格式
+     * 消息格式类别
      * @var int
      */
-    #[ArgAttr('required')]
-    #[ArgAttr('integer')]
-    #[ArgAttr('in:1,2')]
+    #[ArgValidationAttr('required')]
+    #[ArgValidationAttr('in:1,2')]
     public int $type;
     /**
      * 文本消息
      * @var TextMessageArg
      */
+    #[ArgValidationAttr('present')]
     public TextMessageArg $textMessage;
 
     /**
      * 表情消息
      * @var FaceMessageArg
      */
+    #[ArgValidationAttr('present')]
     public FaceMessageArg $faceMessage;
 }

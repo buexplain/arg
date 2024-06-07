@@ -42,19 +42,7 @@ class ArgInfoFactory
             if (!empty($property->getAttributes(IgnoreAttr::class))) {
                 continue;
             }
-            //收集每个属性
             $argInfo->setProperties(new ArgProperty($ref, $property));
-            //收集每个属性的校验信息
-            foreach ($property->getAttributes(ArgAttr::class) as $attribute) {
-                /**
-                 * @var ArgAttr $rule
-                 */
-                $argAttr = $attribute->newInstance();
-                $argInfo->setRules($property->getName(), $argAttr->rule);
-                if (!is_null($argAttr->message)) {
-                    $argInfo->setMessages($property->getName(), $argAttr->rule, $argAttr->message);
-                }
-            }
         }
         return $argInfo;
     }

@@ -17,26 +17,14 @@
 
 declare(strict_types=1);
 
-namespace ArgTest\Cases;
+namespace Arg\Contract;
 
-use Arg\ArgAttr;
-use PHPUnit\Framework\TestCase;
+use Exception;
 
-class ArgAttrTest extends TestCase
+/**
+ * 参数错误
+ */
+class InvalidArgumentException extends Exception
 {
-    /**
-     * @return void
-     */
-    public function testArgAttr()
-    {
-        $test = [
-            ['int', '必须是一个整数'],
-            ['array', null]
-        ];
-        foreach ($test as $item) {
-            $at = new ArgAttr($item[0], $item[1]);
-            $this->assertTrue($at->rule === $item[0]);
-            $this->assertTrue($at->message === $item[1]);
-        }
-    }
+
 }

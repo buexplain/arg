@@ -21,21 +21,10 @@ namespace Arg;
 
 class ArgInfo
 {
-
     /**
      * @var array|ArgProperty[]
      */
     protected array $properties = [];
-
-    /**
-     * @var array 属性的校验规则
-     */
-    protected array $rules = [];
-
-    /**
-     * @var array 属性的校验规则对应的错误时提示信息
-     */
-    protected array $messages = [];
 
     /**
      * @return array|ArgProperty[]
@@ -45,29 +34,14 @@ class ArgInfo
         return $this->properties;
     }
 
+    public function getProperty(string $name): ArgProperty
+    {
+        return $this->properties[$name];
+    }
+
     public function setProperties(ArgProperty $argProperty): void
     {
         $this->properties[$argProperty->property->getName()] = $argProperty;
-    }
-
-    public function getRules(): array
-    {
-        return $this->rules;
-    }
-
-    public function setRules(string $property, mixed $rule): void
-    {
-        $this->rules[$property][] = $rule;
-    }
-
-    public function getMessages(): array
-    {
-        return $this->messages;
-    }
-
-    public function setMessages(string $property, string $rule, string $message): void
-    {
-        $this->messages[$property . '.' . $rule] = $message;
     }
 
     final public function __clone(): void

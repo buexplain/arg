@@ -17,17 +17,19 @@
 
 declare(strict_types=1);
 
-namespace Arg;
+namespace ArgTest\Auxiliary;
 
-use Attribute;
+use Arg\BaseArgForHyperf;
+use stdClass;
 
-/**
- * 描述参数的校验规则的注解
- */
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
-class ArgAttr
+class DefaultValueArg extends BaseArgForHyperf
 {
-    public function __construct(public string $rule, public string|null $message = null)
-    {
-    }
+    public string $string;
+    public int $int;
+    public float $float;
+    public bool $bool;
+    public array $array;
+    public mixed $mixed;
+    public stdClass $stdClass;
+    public object $object;
 }
