@@ -2,7 +2,7 @@
 
 本包解决的问题是，参数通过map传递导致参数无法被编辑器识别的问题。
 
-注意，本包只能在[hyperf](https://github.com/hyperf/hyperf)框架下使用。
+注意，本包只能在[hyperf](https://github.com/hyperf/hyperf)框架下使用，其它框架需要实现。
 
 安装命令：`composer require buexplain/arg`
 
@@ -16,7 +16,7 @@
 
 namespace App\Arg;
 
-use Arg\ArgValidationAttr;
+use Arg\Attr\ArgValidationAttr;
 use Arg\BaseArgForHyperf;
 
 /**
@@ -28,21 +28,18 @@ class RegisterArg extends BaseArgForHyperf
      * @var string 账号
      */
     #[ArgValidationAttr('required')]
-    #[ArgValidationAttr('string')]
     public string $account;
 
     /**
      * @var string 密码
      */
     #[ArgValidationAttr('required')]
-    #[ArgValidationAttr('string')]
     public string $password;
 
     /**
      * @var string 验证码
      */
     #[ArgValidationAttr('required')]
-    #[ArgValidationAttr('string')]
     public string $verification_code;
 }
 ```

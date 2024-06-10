@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
+use Arg\AbstractArg;
+use Arg\BaseArgForHyperf;
 use ArgTest\Auxiliary\DefaultValueArg;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -53,5 +55,53 @@ class ArgDefaultValueTest extends TestCase
             $err = $throwable->getMessage();
         }
         $this->assertTrue($err === '');
+    }
+
+    /**
+     * @return void
+     */
+    public function testDefaultNullValue()
+    {
+        $fun = function (array $parameter) {
+            return new class($parameter) extends BaseArgForHyperf {
+                public string|null $string;
+                public int|null $int;
+                public float|null $float;
+                public bool|null $bool;
+                public array|null $array;
+                public stdClass|null $stdClass;
+                public object|null $object;
+                public DefaultValueArg|null $arg;
+            };
+        };
+        //测试允许null的时候，所有的默认值是否为null
+        $arg = $fun([]);
+        $this->assertTrue(is_null($arg->string));
+        $this->assertTrue(is_null($arg->int));
+        $this->assertTrue(is_null($arg->float));
+        $this->assertTrue(is_null($arg->bool));
+        $this->assertTrue(is_null($arg->array));
+        $this->assertTrue(is_null($arg->object));
+        $this->assertTrue(is_null($arg->stdClass));
+        $this->assertTrue(is_null($arg->arg));
+        //测试允许null的时候，给定值后，所有的默认值是否为不为null
+        $testData = [
+            'string' => 'string',
+            'int' => 100,
+            'float' => 10.2,
+            'bool' => true,
+            'array' => ['a', 'b'],
+            'object' => new stdClass(),
+            'stdClass' => new stdClass(),
+            'arg' => [],
+        ];
+        $arg = $fun($testData);
+        foreach ($testData as $k => $v) {
+            if ($k === 'arg') {
+                $this->assertTrue($arg->arg instanceof AbstractArg);
+            } else {
+                $this->assertTrue($arg->{$k} === $v);
+            }
+        }
     }
 }

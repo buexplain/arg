@@ -17,14 +17,17 @@
 
 declare(strict_types=1);
 
-namespace Arg\Contract;
+namespace Arg\Attr;
 
-use Exception;
+use Attribute;
 
 /**
- * 参数错误
+ * 描述参数的json序列化与反序列化的注解
  */
-class InvalidArgumentException extends Exception
+#[Attribute(Attribute::TARGET_PROPERTY)]
+class JsonNameAttr
 {
-
+    public function __construct(public string $name)
+    {
+    }
 }

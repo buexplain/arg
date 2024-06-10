@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Arg;
 
+use Arg\Attr\IgnoreAttr;
 use ReflectionClass;
 
 class ArgInfoFactory

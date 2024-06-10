@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace Arg;
 
+use Arg\Attr\ArgValidationAttr;
+use Arg\Attr\JsonNameAttr;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
@@ -29,12 +31,11 @@ class ArgProperty
 {
     public ReflectionClass $class;
     public ReflectionProperty $property;
-
-    public bool $extendBaseArg;
-    public mixed $defaultValue;
+    public string $name = '';
+    public mixed $defaultValue = null;
+    public string $defaultArgClass = '';
     public string $setter = '';
     public string $getter = '';
-
     /**
      * @var array 属性的校验规则
      */
@@ -49,6 +50,8 @@ class ArgProperty
     {
         $this->class = $class;
         $this->property = $property;
+        //初始化名字
+        $this->initName();
         //初始化类型信息
         $refType = $property->getType();
         if ($refType instanceof ReflectionNamedType) {
@@ -62,6 +65,18 @@ class ArgProperty
         $this->initGetSet();
         //初始化属性的校验信息
         $this->initRules();
+    }
+
+    protected function initName(): void
+    {
+        $this->name = $this->property->getName();
+        foreach ($this->property->getAttributes(JsonNameAttr::class) as $attribute) {
+            /**
+             * @var JsonNameAttr $argAttr
+             */
+            $argAttr = $attribute->newInstance();
+            $this->name = $argAttr->name;
+        }
     }
 
     protected function initRules(): void
@@ -102,37 +117,26 @@ class ArgProperty
     protected function initNamedType(): void
     {
         $refType = $this->property->getType();
-        if (is_subclass_of($refType->getName(), AbstractArg::class)) {
-            $this->extendBaseArg = true;
-            $this->defaultValue = $refType->getName();
-        } else {
-            $this->extendBaseArg = false;
-            $this->defaultValue = $this->getDefaultValueByType($refType->getName());
-        }
+        $this->defaultArgClass = is_subclass_of($refType->getName(), AbstractArg::class) ? $refType->getName() : '';
+        $this->defaultValue = $this->getDefaultValueByType($refType);
     }
 
     protected function initUnionType(): void
     {
         $refType = $this->property->getType();
-        $this->extendBaseArg = false;
-        $nullType = '';
+        $argType = null;
+        $defaultType = null;
         foreach ($refType->getTypes() as $type) {
-            if ($this->extendBaseArg === false && is_subclass_of($type->getName(), AbstractArg::class)) {
-                $this->extendBaseArg = true;
-                $this->defaultValue = $type->getName();
-                break;
+            if (is_null($argType) && is_subclass_of($type->getName(), AbstractArg::class)) {
+                $argType = $type;
             }
-            if ($type->getName() === 'null') {
-                $nullType = $type->getName();
-            }
-        }
-        if ($this->extendBaseArg === false) {
-            if ($nullType) {
-                $this->defaultValue = null;
-            } else {
-                $this->defaultValue = $this->getDefaultValueByType($refType->getTypes()[0]->getName());
+            is_null($defaultType) && $defaultType = $type;
+            if ($type->allowsNull()) {
+                $defaultType = $type;
             }
         }
+        $argType && $this->defaultArgClass = $argType->getName();
+        $this->defaultValue = $this->getDefaultValueByType($defaultType);
     }
 
     protected function initGetSet(): void
@@ -155,8 +159,12 @@ class ArgProperty
         }
     }
 
-    protected function getDefaultValueByType(string $type): mixed
+    protected function getDefaultValueByType(ReflectionNamedType $refType): mixed
     {
+        if ($refType->allowsNull()) {
+            return null;
+        }
+        $type = $refType->getName();
         if ($type === 'string') {
             $value = '';
         } elseif ($type === 'int' || $type === 'integer') {
@@ -173,6 +181,8 @@ class ArgProperty
             $value = new StdClass();
         } elseif ($type === 'null') {
             $value = null;
+        } elseif (is_subclass_of($type, AbstractArg::class)) {
+            $value = $type;
         } else {
             $value = null;
         }

@@ -19,40 +19,37 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
+use Arg\Attr\JsonNameAttr;
 use Arg\BaseArgForHyperf;
+use ArgTest\Auxiliary\TextMessageArg;
 use PHPUnit\Framework\TestCase;
 
 /**
- * 属性的钩子函数测试
+ * 属性的json名字测试
  */
-class ArgGetSetterTest extends TestCase
+class JsonNameAttrTest extends TestCase
 {
     /**
      * @return void
      */
-    public function testGSetterArg()
+    public function testJsonName()
     {
         $testData = [
-            'data' => 'data',
+            'last_name' => '王',
+            'first_name' => '富贵',
+            'text' => ['text' => '大凡物不得其平则鸣'],
         ];
         $v = new class($testData) extends BaseArgForHyperf {
-            public string $data;
-
-            public function getData(): string
-            {
-                return $this->data . '干扰数据';
-            }
-
-            public function setData(string $data): void
-            {
-                $this->data = $data . '干扰数据';
-            }
+            #[JsonNameAttr('last_name')]
+            public string $lastName;
+            #[JsonNameAttr('first_name')]
+            public string $firstName;
+            #[JsonNameAttr('text')]
+            public TextMessageArg $textMessage;
         };
-        //测试set方法
-        $this->assertNotEquals($testData['data'], $v->data);
-        //测试get方法
-        $v->data = $testData['data'];
-        $data = json_decode(json_encode($v), true);
-        $this->assertNotEquals($testData['data'], $data['data']);
+        $this->assertTrue($testData['last_name'] === $v->lastName);
+        $this->assertTrue($testData['first_name'] === $v->firstName);
+        $this->assertTrue($testData['text']['text'] === $v->textMessage->text);
+        $this->assertTrue(json_decode(json_encode($v), true) === $testData);
     }
 }

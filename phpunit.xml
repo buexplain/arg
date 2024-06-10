@@ -19,6 +19,9 @@
         <testsuite name="BaseArgTest Tests">
             <file>./tests/Cases/BaseArgTest.php</file>
         </testsuite>
+        <testsuite name="JsonNameAttrTest Tests">
+            <file>./tests/Cases/JsonNameAttrTest.php</file>
+        </testsuite>
     </testsuites>
     <coverage/>
     <source>

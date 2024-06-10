@@ -19,18 +19,19 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
-use Arg\ArgValidationAttr;
+use Arg\Attr\ArgValidationAttr;
 use Arg\BaseArgForHyperf;
-use Arg\Contract\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
+/**
+ * 测试各种校验规则
+ */
 class ArgValidationTest extends TestCase
 {
     /**
      * @return void
-     * @throws InvalidArgumentException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -59,7 +60,6 @@ class ArgValidationTest extends TestCase
 
     /**
      * @return void
-     * @throws InvalidArgumentException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -82,7 +82,6 @@ class ArgValidationTest extends TestCase
 
     /**
      * @return void
-     * @throws InvalidArgumentException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -102,7 +101,6 @@ class ArgValidationTest extends TestCase
 
     /**
      * @return void
-     * @throws InvalidArgumentException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
@@ -128,22 +126,27 @@ class ArgValidationTest extends TestCase
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function testPresent()
+    public function testNullable()
     {
         $fun = function (array $parameter) {
             return new class($parameter) extends BaseArgForHyperf {
-                #[ArgValidationAttr('present')]
-                #[ArgValidationAttr('integer')]
-                #[ArgValidationAttr('min:1')]
-                #[ArgValidationAttr('max:120')]
-                public int $age;
+                #[ArgValidationAttr('nullable')]
+                #[ArgValidationAttr('regex:/^1[3-9]\d{9}$/')]
+                public string $phone;
             };
         };
+        //测试没有赋值的情况下验证通过
         $v = $fun([]);
         $bag = $v->validate();
-        $this->assertNotEmpty($bag);
-        $v = $fun(['age' => 1]);
+        $this->assertEmpty($bag);
+        //测试赋予正确的值的情况验证通过
+        $v = $fun(['phone' => '18812345678']);
+        $this->assertTrue($v->phone === '18812345678');
         $bag = $v->validate();
         $this->assertEmpty($bag);
+        //测试赋予错误的值的情况验证失败
+        $v = $fun(['phone' => 'a']);
+        $bag = $v->validate();
+        $this->assertNotEmpty($bag);
     }
 }

@@ -45,7 +45,7 @@ class BaseArgForHyperf extends AbstractArg
         $rules = [];
         $messages = [];
         foreach ($this->argInfo->getProperties() as $property) {
-            if ($property->extendBaseArg === false) {
+            if (!$property->defaultArgClass) {
                 $data[$property->property->getName()] = $this->{$property->property->getName()};
                 $rules[$property->property->getName()] = implode('|', $property->getRules());
                 $messages = array_merge($messages, $property->getMessages());
@@ -60,9 +60,9 @@ class BaseArgForHyperf extends AbstractArg
             //校验通过，继续校验本对象的Arg类型的属性
             $messageBag = $validator->getMessageBag();
             foreach ($this->argInfo->getProperties() as $property) {
-                if ($property->extendBaseArg) {
-                    if (in_array('present', $property->getRules())) {
-                        //present规则，如果属性有值，则校验，否则跳过
+                if ($property->defaultArgClass) {
+                    if ($property->defaultValue === null) {
+                        //如果默认值可以为null，有数据才校验
                         if ($this->assignInfo[$property->property->getName()]) {
                             $messageBag->merge($this->{$property->property->getName()}->validate());
                         }

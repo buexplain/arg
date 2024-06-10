@@ -20,7 +20,7 @@ declare(strict_types=1);
 namespace ArgTest\Cases;
 
 use Arg\ArgInfoFactory;
-use Arg\Contract\InvalidArgumentException;
+use Arg\InvalidArgumentException;
 use ArgTest\Auxiliary\FaceMessageArg;
 use ArgTest\Auxiliary\MessageArg;
 use ArgTest\Auxiliary\SendGroupMessageArg;
@@ -45,7 +45,9 @@ class BaseArgTest extends TestCase
         $msgBag = $face->validate();
         $this->assertNotEmpty($msgBag->all());
         //构造有效数据进行校验，测试校验成功
-        $face = new FaceMessageArg(['face' => ['smile.gif', '666.gif']]);
+        $testData = ['face' => ['smile.gif', '666.gif']];
+        $face = new FaceMessageArg($testData);
+        $this->assertTrue($face->face === $testData['face']);
         $msgBag = $face->validate();
         $this->assertEmpty($msgBag->all());
     }
@@ -79,20 +81,23 @@ class BaseArgTest extends TestCase
     public function testMessageArg()
     {
         $testData = [
-            [
-                'type' => 1,
-                'textMessage' => ['text' => 'a'],
-            ],
-            [
-                'type' => 2,
-                'faceMessage' => ['face' => ['a.gif', 'b.gif']],
-            ]
+            'type' => 1,
+            'textMessage' => ['text' => 'a'],
         ];
-        foreach ($testData as $datum) {
-            $message = new MessageArg($datum);
-            $msgBag = $message->validate();
-            $this->assertEmpty($msgBag->all());
-        }
+        $message = new MessageArg($testData);
+        $msgBag = $message->validate();
+        $this->assertEmpty($msgBag->all());
+        $this->assertTrue($message->textMessage->text === $testData['textMessage']['text']);
+        $this->assertTrue($message->faceMessage === null || $message->faceMessage->face === []);
+        $testData = [
+            'type' => 2,
+            'faceMessage' => ['face' => ['a.gif', 'b.gif']],
+        ];
+        $message = new MessageArg($testData);
+        $msgBag = $message->validate();
+        $this->assertEmpty($msgBag->all());
+        $this->assertTrue($message->faceMessage->face === $testData['faceMessage']['face']);
+        $this->assertTrue($message->textMessage === null || $message->textMessage->text === '');
     }
 
     /**
@@ -112,6 +117,8 @@ class BaseArgTest extends TestCase
             ]
         ];
         $sendGroupMessage = new SendGroupMessageArg($testData);
+        self::assertTrue($sendGroupMessage->group_id === $testData['group_id']);
+        self::assertTrue($sendGroupMessage->sender === $testData['sender']);
         $msgBag = $sendGroupMessage->validate();
         $this->assertEmpty($msgBag->all());
     }

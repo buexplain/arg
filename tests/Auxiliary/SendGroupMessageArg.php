@@ -19,9 +19,8 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\ArgValidationAttr;
+use Arg\Attr\ArgValidationAttr;
 use Arg\BaseArgForHyperf;
-use Arg\Contract\InvalidArgumentException;
 
 /**
  * 发送群消息
@@ -46,14 +45,4 @@ class SendGroupMessageArg extends BaseArgForHyperf
      * @var MessageArg 发送的消息
      */
     public MessageArg $message;
-
-    /**
-     * @param array $parameter
-     * @return void
-     * @throws InvalidArgumentException
-     */
-    public function setMessage(array $parameter): void
-    {
-        $this->message = new MessageArg($parameter);
-    }
 }

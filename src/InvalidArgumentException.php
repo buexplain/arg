@@ -17,32 +17,14 @@
 
 declare(strict_types=1);
 
-namespace ArgTest\Auxiliary;
+namespace Arg;
 
-use Arg\Attr\ArgValidationAttr;
-use Arg\BaseArgForHyperf;
+use Exception;
 
 /**
- * 消息体
+ * 参数错误
  */
-class MessageArg extends BaseArgForHyperf
+class InvalidArgumentException extends Exception
 {
-    /**
-     * 消息格式类别
-     * @var int
-     */
-    #[ArgValidationAttr('required')]
-    #[ArgValidationAttr('in:1,2')]
-    public int $type;
-    /**
-     * 文本消息
-     * @var TextMessageArg|null
-     */
-    public TextMessageArg|null $textMessage;
 
-    /**
-     * 表情消息
-     * @var FaceMessageArg|null
-     */
-    public FaceMessageArg|null $faceMessage;
 }

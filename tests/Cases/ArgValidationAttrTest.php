@@ -19,9 +19,12 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
-use Arg\ArgValidationAttr;
+use Arg\Attr\ArgValidationAttr;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * 测试校验规则注解
+ */
 class ArgValidationAttrTest extends TestCase
 {
     /**

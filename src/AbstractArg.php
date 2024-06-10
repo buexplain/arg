@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace Arg;
 
-use Arg\Contract\InvalidArgumentException;
+use Arg\Attr\IgnoreAttr;
 use JsonSerializable;
 use stdClass;
 use TypeError;
@@ -51,7 +51,7 @@ abstract class AbstractArg implements JsonSerializable
     {
         $this->argInfo = ArgInfoFactory::get(static::class);
         $this->assign($parameter);
-        $this->initExtendBaseArg($parameter);
+        $this->initExtendArg($parameter);
     }
 
     /**
@@ -59,39 +59,54 @@ abstract class AbstractArg implements JsonSerializable
      * @return void
      * @throws InvalidArgumentException
      */
-    private function initExtendBaseArg(array $parameter): void
+    private function initExtendArg(array $parameter): void
     {
         foreach ($this->argInfo->getProperties() as $property) {
-            if ($property->extendBaseArg) {
-                if (array_key_exists($property->property->getName(), $parameter)) {
-                    $classParameter = $parameter[$property->property->getName()];
-                    if (!is_array($classParameter)) {
-                        throw new InvalidArgumentException(sprintf('property %s must be array', $property->property->getName()));
-                    }
-                    $this->assignInfo[$property->property->getName()] = true;
-                } else {
-                    $classParameter = [];
-                    $this->assignInfo[$property->property->getName()] = false;
+            if ($property->defaultArgClass === '') {
+                //跳过没有继承arg的普通属性
+                continue;
+            }
+            //存在外部入参
+            if (array_key_exists($property->name, $parameter)) {
+                $classParameter = $parameter[$property->name];
+                if (!is_array($classParameter)) {
+                    throw new InvalidArgumentException(sprintf('parameter %s must be array', $property->name));
                 }
-                $class = $property->defaultValue;
                 if ($property->setter) {
                     //调用setter方法
                     call_user_func_array([$this, $property->setter], [$classParameter]);
                 } else {
                     //直接赋值
+                    $class = $property->defaultArgClass;
                     $this->{$property->property->getName()} = new $class($classParameter);
                 }
+                //标记该属性已经因为外部参数的输入而被赋值
+                $this->assignInfo[$property->property->getName()] = true;
+                continue;
+            }
+            //不存在外部入参
+            $this->assignInfo[$property->property->getName()] = false;
+            if ($property->setter) {
+                //调用setter方法
+                call_user_func_array([$this, $property->setter], [[]]);
+            } else if (is_null($property->defaultValue)) {
+                $this->{$property->property->getName()} = null;
+            } else {
+                //直接赋值
+                $class = $property->defaultArgClass;
+                $this->{$property->property->getName()} = new $class([]);
             }
         }
     }
 
     /**
-     *
+     * 获取属性的反射信息
      * @return ArgInfo
      */
     public function getArgInfo(): ArgInfo
     {
         if (spl_object_id($this->argInfo) === spl_object_id(ArgInfoFactory::get(static::class))) {
+            //这里必须克隆一次，因为不知道后续的操作是否会修改argInfo
             $this->argInfo = clone $this->argInfo;
         }
         return $this->argInfo;
@@ -106,13 +121,14 @@ abstract class AbstractArg implements JsonSerializable
     protected function assign(array $parameter): void
     {
         foreach ($this->argInfo->getProperties() as $property) {
-            if ($property->extendBaseArg) {
+            //跳过继承arg的特殊属性
+            if ($property->defaultArgClass !== '') {
                 continue;
             }
             $this->assignInfo[$property->property->getName()] = false;
-            if (array_key_exists($property->property->getName(), $parameter)) {
+            if (array_key_exists($property->name, $parameter)) {
                 //存在需要注入的数据
-                $v = $parameter[$property->property->getName()];
+                $v = $parameter[$property->name];
                 //优先使用setter方法进行注入
                 try {
                     if ($property->setter) {
@@ -149,9 +165,9 @@ abstract class AbstractArg implements JsonSerializable
         $ret = new stdClass();
         foreach ($this->argInfo->getProperties() as $property) {
             if ($property->getter) {
-                $ret->{$property->property->getName()} = call_user_func_array([$this, $property->getter], []);
+                $ret->{$property->name} = call_user_func_array([$this, $property->getter], []);
             } else {
-                $ret->{$property->property->getName()} = $this->{$property->property->getName()};
+                $ret->{$property->name} = $this->{$property->property->getName()};
             }
         }
         return $ret;

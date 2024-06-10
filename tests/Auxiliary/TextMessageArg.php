@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\ArgValidationAttr;
+use Arg\Attr\ArgValidationAttr;
 use Arg\BaseArgForHyperf;
 
 /**
