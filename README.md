@@ -2,11 +2,12 @@
 
 本包解决的问题是，参数通过map传递导致参数无法被编辑器识别的问题。
 
-注意，本包只能在[hyperf](https://github.com/hyperf/hyperf)框架下使用，其它框架需要实现。
+注意，本包只能在[hyperf](https://github.com/hyperf/hyperf)框架下使用，其它框架需要实现`Arg\AbstractArg`抽象类。
 
 安装命令：`composer require buexplain/arg`
 
 ## 使用示例
+
 以注册接口为例子，做个简单的示例。
 
 第一步：构造一个注册接口需要的参数描述。
@@ -45,6 +46,7 @@ class RegisterArg extends BaseArgForHyperf
 ```
 
 第二步：编写注册接口的控制器
+
 ```php
 <?php
 
@@ -89,6 +91,7 @@ class IndexController extends AbstractController
 ```
 
 第三步：实现注册逻辑
+
 ```php
 <?php
 
@@ -112,7 +115,6 @@ class RegisterService
     }
 }
 ```
-
 
 ## 运行测试用例
 
