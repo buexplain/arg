@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace Arg;
 
-use Arg\Attr\IgnoreAttr;
+use Arg\Attr\IgnoreRefAttr;
 use ReflectionClass;
 
 class ArgInfoFactory
@@ -40,7 +40,7 @@ class ArgInfoFactory
         //遍历类的所有属性
         foreach ($ref->getProperties() as $property) {
             //跳过不需要处理的字段
-            if (!empty($property->getAttributes(IgnoreAttr::class))) {
+            if (!empty($property->getAttributes(IgnoreRefAttr::class))) {
                 continue;
             }
             $argInfo->setProperties(new ArgProperty($ref, $property));

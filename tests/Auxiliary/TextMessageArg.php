@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\Attr\ArgValidationAttr;
+use Arg\Attr\ValidationAttr;
 use Arg\BaseArgForHyperf;
 
 /**
@@ -30,7 +30,7 @@ class TextMessageArg extends BaseArgForHyperf
     /**
      * @var string
      */
-    #[ArgValidationAttr('required', '不能发送空白信息')]
+    #[ValidationAttr('required', '不能发送空白信息')]
     public string $text;
 
     public function __construct(array $parameter)

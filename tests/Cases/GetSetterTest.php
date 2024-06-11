@@ -25,7 +25,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * 属性的钩子函数测试
  */
-class ArgGetSetterTest extends TestCase
+class GetSetterTest extends TestCase
 {
     /**
      * @return void

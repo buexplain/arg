@@ -17,7 +17,7 @@
 
 namespace App\Arg;
 
-use Arg\Attr\ArgValidationAttr;
+use Arg\Attr\ValidationAttr;
 use Arg\BaseArgForHyperf;
 
 /**
@@ -28,19 +28,19 @@ class RegisterArg extends BaseArgForHyperf
     /**
      * @var string 账号
      */
-    #[ArgValidationAttr('required')]
+    #[ValidationAttr('required')]
     public string $account;
 
     /**
      * @var string 密码
      */
-    #[ArgValidationAttr('required')]
+    #[ValidationAttr('required')]
     public string $password;
 
     /**
      * @var string 验证码
      */
-    #[ArgValidationAttr('required')]
+    #[ValidationAttr('required')]
     public string $verification_code;
 }
 ```

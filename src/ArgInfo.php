@@ -19,15 +19,18 @@ declare(strict_types=1);
 
 namespace Arg;
 
+use JetBrains\PhpStorm\ArrayShape;
+
 class ArgInfo
 {
     /**
-     * @var array|ArgProperty[]
+     * @var array|array<string,ArgProperty>
      */
+    #[ArrayShape(['*' => ArgProperty::class])]
     protected array $properties = [];
 
     /**
-     * @return array|ArgProperty[]
+     * @return array|array<string,ArgProperty>
      */
     public function getProperties(): array
     {

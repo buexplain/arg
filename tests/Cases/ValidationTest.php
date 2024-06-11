@@ -19,8 +19,11 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
-use Arg\Attr\ArgValidationAttr;
+use Arg\Attr\IgnoreAssignAttr;
+use Arg\Attr\IgnoreJsonSerializeAttr;
+use Arg\Attr\ValidationAttr;
 use Arg\BaseArgForHyperf;
+use Hyperf\Validation\Rule;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -28,7 +31,7 @@ use Psr\Container\NotFoundExceptionInterface;
 /**
  * 测试各种校验规则
  */
-class ArgValidationTest extends TestCase
+class ValidationTest extends TestCase
 {
     /**
      * @return void
@@ -39,7 +42,7 @@ class ArgValidationTest extends TestCase
     {
         $fun = function (array $parameter) {
             return new class($parameter) extends BaseArgForHyperf {
-                #[ArgValidationAttr('accepted', '请同意服务协议')]
+                #[ValidationAttr('accepted', '请同意服务协议')]
                 public bool $agreement;
             };
         };
@@ -68,8 +71,8 @@ class ArgValidationTest extends TestCase
         $fun = function (array $parameter) {
             return new class($parameter) extends BaseArgForHyperf {
                 public bool $agree;
-                #[ArgValidationAttr('required')]
-                #[ArgValidationAttr('accepted_if:agree,true', '请先勾选服务协议')]
+                #[ValidationAttr('required')]
+                #[ValidationAttr('accepted_if:agree,true', '请先勾选服务协议')]
                 public string $terms;
             };
         };
@@ -89,8 +92,8 @@ class ArgValidationTest extends TestCase
     {
         $fun = function (array $parameter) {
             return new class($parameter) extends BaseArgForHyperf {
-                #[ArgValidationAttr('required')]
-                #[ArgValidationAttr('active_url')]
+                #[ValidationAttr('required')]
+                #[ValidationAttr('active_url')]
                 public string $url;
             };
         };
@@ -108,8 +111,8 @@ class ArgValidationTest extends TestCase
     {
         $fun = function (array $parameter) {
             return new class($parameter) extends BaseArgForHyperf {
-                #[ArgValidationAttr('required')]
-                #[ArgValidationAttr('required_array_keys:foo,bar')]
+                #[ValidationAttr('required')]
+                #[ValidationAttr('required_array_keys:foo,bar')]
                 public array $arr;
             };
         };
@@ -130,8 +133,8 @@ class ArgValidationTest extends TestCase
     {
         $fun = function (array $parameter) {
             return new class($parameter) extends BaseArgForHyperf {
-                #[ArgValidationAttr('nullable')]
-                #[ArgValidationAttr('regex:/^1[3-9]\d{9}$/')]
+                #[ValidationAttr('nullable')]
+                #[ValidationAttr('regex:/^1[3-9]\d{9}$/')]
                 public string $phone;
             };
         };
@@ -148,5 +151,75 @@ class ArgValidationTest extends TestCase
         $v = $fun(['phone' => 'a']);
         $bag = $v->validate();
         $this->assertNotEmpty($bag);
+    }
+
+    /**
+     * @return void
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testIn()
+    {
+        $fun = function (array $parameter) {
+            return new class($parameter) extends BaseArgForHyperf {
+                #[ValidationAttr('required')]
+                public string $language;
+
+                public function __construct(array $parameter)
+                {
+                    parent::__construct($parameter);
+                    $this->getArgInfo()->getProperty('language')->setRules(Rule::in(['php', 'java', 'python']));
+                }
+            };
+        };
+        //测试空值的情况
+        $v = $fun([]);
+        $bag = $v->validate();
+        $this->assertNotEmpty($bag);
+        //测试错误的值的情况
+        $v = $fun(['language' => 'javascript']);
+        $bag = $v->validate();
+        $this->assertNotEmpty($bag);
+        //测试正确的值的情况
+        $v = $fun(['language' => 'php']);
+        $bag = $v->validate();
+        $this->assertEmpty($bag);
+    }
+
+    /**
+     * @return void
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testInArray()
+    {
+        $fun = function (array $parameter) {
+            return new class($parameter) extends BaseArgForHyperf {
+                #[ValidationAttr('required')]
+                #[ValidationAttr('in_array:whiteList.*')]
+                public string $language;
+                #[IgnoreJsonSerializeAttr]
+                #[IgnoreAssignAttr]
+                protected array $whiteList;
+
+                public function __construct(array $parameter)
+                {
+                    parent::__construct($parameter);
+                    $this->whiteList = ['php', 'java', 'python'];
+                }
+            };
+        };
+        //测试空值的情况
+        $v = $fun([]);
+        $bag = $v->validate();
+        $this->assertNotEmpty($bag);
+        //测试错误的值的情况
+        $v = $fun(['language' => 'javascript']);
+        $bag = $v->validate();
+        $this->assertNotEmpty($bag);
+        //测试正确的值的情况
+        $v = $fun(['language' => 'php']);
+        $bag = $v->validate();
+        $this->assertEmpty($bag);
     }
 }

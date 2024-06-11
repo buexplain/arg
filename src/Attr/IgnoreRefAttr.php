@@ -22,12 +22,9 @@ namespace Arg\Attr;
 use Attribute;
 
 /**
- * 描述参数的校验规则的注解
+ * 需要让本包在反射收集字段信息阶段忽略不予处理的字段，需要加上该注解
  */
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
-class ArgValidationAttr
+#[Attribute(Attribute::TARGET_PROPERTY)]
+class IgnoreRefAttr
 {
-    public function __construct(public string $rule, public string|null $message = null)
-    {
-    }
 }

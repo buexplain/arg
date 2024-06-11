@@ -29,7 +29,7 @@ use Throwable;
 /**
  * 默认值的注入测试
  */
-class ArgDefaultValueTest extends TestCase
+class DefaultValueTest extends TestCase
 {
     public function testDefaultValue()
     {

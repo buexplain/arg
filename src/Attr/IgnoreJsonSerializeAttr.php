@@ -17,16 +17,14 @@
 
 declare(strict_types=1);
 
-namespace ArgTest\Auxiliary;
+namespace Arg\Attr;
 
-use Arg\Attr\ValidationAttr;
-use Arg\BaseArgForHyperf;
+use Attribute;
 
 /**
- * 表情消息
+ * 需要让本包在json序列化阶段忽略不予处理的字段，需要加上该注解
  */
-class FaceMessageArg extends BaseArgForHyperf
+#[Attribute(Attribute::TARGET_PROPERTY)]
+class IgnoreJsonSerializeAttr
 {
-    #[ValidationAttr('required')]
-    public array $face;
 }

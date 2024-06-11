@@ -41,6 +41,7 @@ class BaseArgForHyperf extends AbstractArg
         /**
          * @var ValidatorInterface $validator
          */
+        //先校验普通参数
         $data = [];
         $rules = [];
         $messages = [];
@@ -56,8 +57,8 @@ class BaseArgForHyperf extends AbstractArg
             $rules,
             $messages
         );
+        //再递归校验Arg类型的属性
         if ($validator->passes()) {
-            //校验通过，继续校验本对象的Arg类型的属性
             $messageBag = $validator->getMessageBag();
             foreach ($this->argInfo->getProperties() as $property) {
                 if ($property->defaultArgClass) {

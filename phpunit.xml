@@ -4,23 +4,26 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
          cacheDirectory=".phpunit.cache">
     <testsuites>
-        <testsuite name="ArgDefaultValueTest Tests">
-            <file>./tests/Cases/ArgDefaultValueTest.php</file>
+        <testsuite name="DefaultValueTest Tests">
+            <file>./tests/Cases/DefaultValueTest.php</file>
         </testsuite>
-        <testsuite name="ArgGetSetterTest Tests">
-            <file>./tests/Cases/ArgGetSetterTest.php</file>
+        <testsuite name="GetSetterTest Tests">
+            <file>./tests/Cases/GetSetterTest.php</file>
         </testsuite>
-        <testsuite name="ArgValidationAttrTest Tests">
-            <file>./tests/Cases/ArgValidationAttrTest.php</file>
+        <testsuite name="ValidationAttrTest Tests">
+            <file>./tests/Cases/ValidationAttrTest.php</file>
         </testsuite>
-        <testsuite name="ArgValidationTest Tests">
-            <file>./tests/Cases/ArgValidationTest.php</file>
+        <testsuite name="ValidationTest Tests">
+            <file>./tests/Cases/ValidationTest.php</file>
         </testsuite>
         <testsuite name="BaseArgTest Tests">
             <file>./tests/Cases/BaseArgTest.php</file>
         </testsuite>
-        <testsuite name="JsonNameAttrTest Tests">
-            <file>./tests/Cases/JsonNameAttrTest.php</file>
+        <testsuite name="JsonTest Tests">
+            <file>./tests/Cases/JsonTest.php</file>
+        </testsuite>
+        <testsuite name="IgnoreAssignAttrTest Tests">
+            <file>./tests/Cases/IgnoreAssignAttrTest.php</file>
         </testsuite>
     </testsuites>
     <coverage/>

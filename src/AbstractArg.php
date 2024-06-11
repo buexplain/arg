@@ -19,7 +19,8 @@ declare(strict_types=1);
 
 namespace Arg;
 
-use Arg\Attr\IgnoreAttr;
+use Arg\Attr\IgnoreRefAttr;
+use JetBrains\PhpStorm\ArrayShape;
 use JsonSerializable;
 use stdClass;
 use TypeError;
@@ -34,13 +35,13 @@ abstract class AbstractArg implements JsonSerializable
      * 该属性必须是只读的，如果子类对该属性做变更，则必须进行克隆
      * @var ArgInfo
      */
-    #[IgnoreAttr]
+    #[IgnoreRefAttr]
     protected ArgInfo $argInfo;
     /**
-     * 记录每个字段是否赋值
-     * @var array<string, bool>
+     * @var array|array<string,bool> 记录每个字段是否赋值
      */
-    #[IgnoreAttr]
+    #[IgnoreRefAttr]
+    #[ArrayShape(['*' => 'bool'])]
     protected array $assignInfo = [];
 
     /**
@@ -64,6 +65,10 @@ abstract class AbstractArg implements JsonSerializable
         foreach ($this->argInfo->getProperties() as $property) {
             if ($property->defaultArgClass === '') {
                 //跳过没有继承arg的普通属性
+                continue;
+            }
+            //跳过忽略赋值的属性
+            if ($property->ignoreAssign) {
                 continue;
             }
             //存在外部入参
@@ -125,6 +130,10 @@ abstract class AbstractArg implements JsonSerializable
             if ($property->defaultArgClass !== '') {
                 continue;
             }
+            //跳过忽略赋值的属性
+            if ($property->ignoreAssign) {
+                continue;
+            }
             $this->assignInfo[$property->property->getName()] = false;
             if (array_key_exists($property->name, $parameter)) {
                 //存在需要注入的数据
@@ -164,6 +173,9 @@ abstract class AbstractArg implements JsonSerializable
     {
         $ret = new stdClass();
         foreach ($this->argInfo->getProperties() as $property) {
+            if ($property->ignoreJsonSerialize) {
+                continue;
+            }
             if ($property->getter) {
                 $ret->{$property->name} = call_user_func_array([$this, $property->getter], []);
             } else {

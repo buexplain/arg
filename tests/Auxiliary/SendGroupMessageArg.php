@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\Attr\ArgValidationAttr;
+use Arg\Attr\ValidationAttr;
 use Arg\BaseArgForHyperf;
 
 /**
@@ -30,15 +30,15 @@ class SendGroupMessageArg extends BaseArgForHyperf
     /**
      * @var int 群id
      */
-    #[ArgValidationAttr('required', '请输入群id')]
-    #[ArgValidationAttr('min:1', '请输入群id')]
+    #[ValidationAttr('required', '请输入群id')]
+    #[ValidationAttr('min:1', '群id不能小于1')]
     public int $group_id;
 
     /**
      * @var string 发送消息的人
      */
-    #[ArgValidationAttr('required')]
-    #[ArgValidationAttr('max:7', '发送者不能超过7个字符')]
+    #[ValidationAttr('required')]
+    #[ValidationAttr('max:7', '发送者名称不能超过7个字符')]
     public string $sender;
 
     /**

@@ -17,29 +17,14 @@
 
 declare(strict_types=1);
 
-namespace ArgTest\Cases;
+namespace Arg\Attr;
 
-use Arg\Attr\ArgValidationAttr;
-use PHPUnit\Framework\TestCase;
+use Attribute;
 
 /**
- * 测试校验规则注解
+ * 需要让本包在注入外部数据阶段忽略不予处理的字段，需要加上该注解
  */
-class ArgValidationAttrTest extends TestCase
+#[Attribute(Attribute::TARGET_PROPERTY)]
+class IgnoreAssignAttr
 {
-    /**
-     * @return void
-     */
-    public function testArgValidationAttr()
-    {
-        $test = [
-            ['int', '必须是一个整数'],
-            ['array', null]
-        ];
-        foreach ($test as $item) {
-            $at = new ArgValidationAttr($item[0], $item[1]);
-            $this->assertTrue($at->rule === $item[0]);
-            $this->assertTrue($at->message === $item[1]);
-        }
-    }
 }

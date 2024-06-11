@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace ArgTest\Auxiliary;
 
-use Arg\Attr\ArgValidationAttr;
+use Arg\Attr\ValidationAttr;
 use Arg\BaseArgForHyperf;
 
 /**
@@ -31,8 +31,8 @@ class MessageArg extends BaseArgForHyperf
      * 消息格式类别
      * @var int
      */
-    #[ArgValidationAttr('required')]
-    #[ArgValidationAttr('in:1,2')]
+    #[ValidationAttr('required')]
+    #[ValidationAttr('in:1,2')]
     public int $type;
     /**
      * 文本消息

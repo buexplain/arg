@@ -19,7 +19,9 @@ declare(strict_types=1);
 
 namespace Arg;
 
-use Arg\Attr\ArgValidationAttr;
+use Arg\Attr\IgnoreAssignAttr;
+use Arg\Attr\IgnoreJsonSerializeAttr;
+use Arg\Attr\ValidationAttr;
 use Arg\Attr\JsonNameAttr;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -34,6 +36,8 @@ class ArgProperty
     public string $name = '';
     public mixed $defaultValue = null;
     public string $defaultArgClass = '';
+    public bool $ignoreJsonSerialize;
+    public bool $ignoreAssign;
     public string $setter = '';
     public string $getter = '';
     /**
@@ -50,6 +54,10 @@ class ArgProperty
     {
         $this->class = $class;
         $this->property = $property;
+        //初始化ignoreJson
+        $this->ignoreJsonSerialize = !empty($property->getAttributes(IgnoreJsonSerializeAttr::class));
+        //初始化ignoreAssign
+        $this->ignoreAssign = !empty($property->getAttributes(IgnoreAssignAttr::class));
         //初始化名字
         $this->initName();
         //初始化类型信息
@@ -82,9 +90,9 @@ class ArgProperty
     protected function initRules(): void
     {
         //收集每个属性的校验信息
-        foreach ($this->property->getAttributes(ArgValidationAttr::class) as $attribute) {
+        foreach ($this->property->getAttributes(ValidationAttr::class) as $attribute) {
             /**
-             * @var ArgValidationAttr $argAttr
+             * @var ValidationAttr $argAttr
              */
             $argAttr = $attribute->newInstance();
             $this->setRules($argAttr->rule);

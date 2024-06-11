@@ -19,15 +19,16 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
+use Arg\Attr\IgnoreJsonSerializeAttr;
 use Arg\Attr\JsonNameAttr;
 use Arg\BaseArgForHyperf;
 use ArgTest\Auxiliary\TextMessageArg;
 use PHPUnit\Framework\TestCase;
 
 /**
- * 属性的json名字测试
+ * 属性的json序列化测试
  */
-class JsonNameAttrTest extends TestCase
+class JsonTest extends TestCase
 {
     /**
      * @return void
@@ -51,5 +52,24 @@ class JsonNameAttrTest extends TestCase
         $this->assertTrue($testData['first_name'] === $v->firstName);
         $this->assertTrue($testData['text']['text'] === $v->textMessage->text);
         $this->assertTrue(json_decode(json_encode($v), true) === $testData);
+    }
+
+    /**
+     * @return void
+     */
+    public function testIgnoreJsonSerialize()
+    {
+        $testData = [
+            'lastName' => '王',
+            'firstName' => '富贵',
+        ];
+        $v = new class($testData) extends BaseArgForHyperf {
+            #[IgnoreJsonSerializeAttr]
+            public string $lastName;
+            public string $firstName;
+        };
+        $this->assertTrue($testData['lastName'] === $v->lastName);
+        $this->assertTrue($testData['firstName'] === $v->firstName);
+        $this->assertFalse(json_decode(json_encode($v), true) === $testData);
     }
 }

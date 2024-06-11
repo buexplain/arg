@@ -17,16 +17,29 @@
 
 declare(strict_types=1);
 
-namespace ArgTest\Auxiliary;
+namespace ArgTest\Cases;
 
 use Arg\Attr\ValidationAttr;
-use Arg\BaseArgForHyperf;
+use PHPUnit\Framework\TestCase;
 
 /**
- * 表情消息
+ * 测试校验规则注解
  */
-class FaceMessageArg extends BaseArgForHyperf
+class ValidationAttrTest extends TestCase
 {
-    #[ValidationAttr('required')]
-    public array $face;
+    /**
+     * @return void
+     */
+    public function testArgValidationAttr()
+    {
+        $test = [
+            ['int', '必须是一个整数'],
+            ['array', null]
+        ];
+        foreach ($test as $item) {
+            $at = new ValidationAttr($item[0], $item[1]);
+            $this->assertTrue($at->rule === $item[0]);
+            $this->assertTrue($at->message === $item[1]);
+        }
+    }
 }
