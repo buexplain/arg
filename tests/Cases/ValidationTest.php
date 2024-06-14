@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
-use Arg\Attr\IgnoreAssignAttr;
+use Arg\Attr\IgnoreInitAttr;
 use Arg\Attr\IgnoreJsonSerializeAttr;
 use Arg\Attr\ValidationAttr;
 use Arg\BaseArgForHyperf;
@@ -199,7 +199,7 @@ class ValidationTest extends TestCase
                 #[ValidationAttr('in_array:whiteList.*')]
                 public string $language;
                 #[IgnoreJsonSerializeAttr]
-                #[IgnoreAssignAttr]
+                #[IgnoreInitAttr]
                 protected array $whiteList;
 
                 public function __construct(array $parameter)

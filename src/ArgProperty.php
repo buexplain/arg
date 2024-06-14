@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace Arg;
 
-use Arg\Attr\IgnoreAssignAttr;
+use Arg\Attr\IgnoreInitAttr;
 use Arg\Attr\IgnoreJsonSerializeAttr;
 use Arg\Attr\ValidationAttr;
 use Arg\Attr\JsonNameAttr;
@@ -29,16 +29,46 @@ use ReflectionProperty;
 use ReflectionUnionType;
 use stdClass;
 
+/**
+ * 属性的特征类
+ */
 class ArgProperty
 {
+    /**
+     * @var ReflectionClass 类的反射对象
+     */
     public ReflectionClass $class;
+    /**
+     * @var ReflectionProperty 属性的反射对象
+     */
     public ReflectionProperty $property;
+    /**
+     * @var string 属性的名字，可通过JsonNameAttr注解进行配置
+     */
     public string $name = '';
+    /**
+     * @var mixed|null 属性的默认值
+     */
     public mixed $defaultValue = null;
+    /**
+     * @var string 继承了AbstractArg类的特殊属性
+     */
     public string $defaultArgClass = '';
+    /**
+     * @var bool 是否在json_encode的时候跳过，可通过IgnoreJsonSerializeAttr注解进行配置
+     */
     public bool $ignoreJsonSerialize;
-    public bool $ignoreAssign;
+    /**
+     * @var bool 是否在属性默认值初始化的时候跳过，可通过IgnoreInitAttr注解进行配置
+     */
+    public bool $ignoreInit;
+    /**
+     * @var string 属性的set方法
+     */
     public string $setter = '';
+    /**
+     * @var string 属性的get方法
+     */
     public string $getter = '';
     /**
      * @var array 属性的校验规则
@@ -57,7 +87,7 @@ class ArgProperty
         //初始化ignoreJson
         $this->ignoreJsonSerialize = !empty($property->getAttributes(IgnoreJsonSerializeAttr::class));
         //初始化ignoreAssign
-        $this->ignoreAssign = !empty($property->getAttributes(IgnoreAssignAttr::class));
+        $this->ignoreInit = !empty($property->getAttributes(IgnoreInitAttr::class));
         //初始化名字
         $this->initName();
         //初始化类型信息

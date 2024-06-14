@@ -32,6 +32,18 @@ use Psr\Container\NotFoundExceptionInterface;
 class BaseArgForHyperf extends AbstractArg
 {
     /**
+     * @param array $parameter
+     * @throws InvalidArgumentException
+     */
+    public function __construct(array $parameter)
+    {
+        parent::__construct();
+        //这里一定要调用类属性初始化方法，对类的所有属性进行初始化
+        $this->initOrdinaryArg($parameter);
+        $this->initExtendArg($parameter);
+    }
+
+    /**
      * @return mixed
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
@@ -64,7 +76,7 @@ class BaseArgForHyperf extends AbstractArg
                 if ($property->defaultArgClass) {
                     if ($property->defaultValue === null) {
                         //如果默认值可以为null，有数据才校验
-                        if ($this->assignInfo[$property->property->getName()]) {
+                        if ($this->initByParameter[$property->property->getName()]) {
                             $messageBag->merge($this->{$property->property->getName()}->validate());
                         }
                     } else {

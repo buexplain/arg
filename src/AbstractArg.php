@@ -32,35 +32,78 @@ abstract class AbstractArg implements JsonSerializable
 {
     /**
      * static类的反射信息
-     * 该属性必须是只读的，如果子类对该属性做变更，则必须进行克隆
+     * 该属性必须是只读的，如果子类或者外部逻辑需要对该属性做变更，则必须进行克隆操作，尤其是常驻内存的php进程
      * @var ArgInfo
      */
     #[IgnoreRefAttr]
     protected ArgInfo $argInfo;
     /**
-     * @var array|array<string,bool> 记录每个字段是否赋值
+     * @var array|array<string,bool> 记录每个字段是否是因为外部输入参数被初始化的
      */
     #[IgnoreRefAttr]
     #[ArrayShape(['*' => 'bool'])]
-    protected array $assignInfo = [];
+    protected array $initByParameter = [];
 
-    /**
-     * @param array $parameter
-     * @throws InvalidArgumentException
-     */
-    public function __construct(array $parameter)
+    public function __construct()
     {
         $this->argInfo = ArgInfoFactory::get(static::class);
-        $this->assign($parameter);
-        $this->initExtendArg($parameter);
     }
 
     /**
+     * 初始化没有继承本类的普通参数
      * @param array $parameter
      * @return void
      * @throws InvalidArgumentException
      */
-    private function initExtendArg(array $parameter): void
+    protected function initOrdinaryArg(array $parameter): void
+    {
+        foreach ($this->argInfo->getProperties() as $property) {
+            //跳过继承arg的特殊属性
+            if ($property->defaultArgClass !== '') {
+                continue;
+            }
+            //跳过忽略赋值的属性
+            if ($property->ignoreInit) {
+                continue;
+            }
+            $this->initByParameter[$property->property->getName()] = false;
+            if (array_key_exists($property->name, $parameter)) {
+                //存在需要注入的数据
+                $v = $parameter[$property->name];
+                //优先使用setter方法进行注入
+                try {
+                    if ($property->setter) {
+                        call_user_func_array([$this, $property->setter], [$v]);
+                    } else {
+                        //没有setter方法，直接赋值，这里可能会发生错误
+                        if ($property->defaultValue instanceof StdClass) {
+                            $this->{$property->property->getName()} = (object)$v;
+                        } else {
+                            $this->{$property->property->getName()} = $v;
+                        }
+                    }
+                    $this->initByParameter[$property->property->getName()] = true;
+                } catch (TypeError $error) {
+                    throw new InvalidArgumentException($error->getMessage());
+                }
+            } else if ($property->property->isInitialized($this) === false) {
+                //初始化还未初始化的属性
+                if ($property->defaultValue instanceof StdClass) {
+                    $this->{$property->property->getName()} = new stdClass();
+                } else {
+                    $this->{$property->property->getName()} = $property->defaultValue;
+                }
+            }
+        }
+    }
+
+    /**
+     * 初始化继承本类的特殊参数
+     * @param array $parameter
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    protected function initExtendArg(array $parameter): void
     {
         foreach ($this->argInfo->getProperties() as $property) {
             if ($property->defaultArgClass === '') {
@@ -68,7 +111,7 @@ abstract class AbstractArg implements JsonSerializable
                 continue;
             }
             //跳过忽略赋值的属性
-            if ($property->ignoreAssign) {
+            if ($property->ignoreInit) {
                 continue;
             }
             //存在外部入参
@@ -86,11 +129,11 @@ abstract class AbstractArg implements JsonSerializable
                     $this->{$property->property->getName()} = new $class($classParameter);
                 }
                 //标记该属性已经因为外部参数的输入而被赋值
-                $this->assignInfo[$property->property->getName()] = true;
+                $this->initByParameter[$property->property->getName()] = true;
                 continue;
             }
             //不存在外部入参
-            $this->assignInfo[$property->property->getName()] = false;
+            $this->initByParameter[$property->property->getName()] = false;
             if ($property->setter) {
                 //调用setter方法
                 call_user_func_array([$this, $property->setter], [[]]);
@@ -115,54 +158,6 @@ abstract class AbstractArg implements JsonSerializable
             $this->argInfo = clone $this->argInfo;
         }
         return $this->argInfo;
-    }
-
-    /**
-     * 注入数据到对象本身的属性中
-     * @param array $parameter
-     * @return void
-     * @throws InvalidArgumentException
-     */
-    protected function assign(array $parameter): void
-    {
-        foreach ($this->argInfo->getProperties() as $property) {
-            //跳过继承arg的特殊属性
-            if ($property->defaultArgClass !== '') {
-                continue;
-            }
-            //跳过忽略赋值的属性
-            if ($property->ignoreAssign) {
-                continue;
-            }
-            $this->assignInfo[$property->property->getName()] = false;
-            if (array_key_exists($property->name, $parameter)) {
-                //存在需要注入的数据
-                $v = $parameter[$property->name];
-                //优先使用setter方法进行注入
-                try {
-                    if ($property->setter) {
-                        call_user_func_array([$this, $property->setter], [$v]);
-                    } else {
-                        //没有setter方法，直接赋值，这里可能会发生错误
-                        if ($property->defaultValue instanceof StdClass) {
-                            $this->{$property->property->getName()} = (object)$v;
-                        } else {
-                            $this->{$property->property->getName()} = $v;
-                        }
-                    }
-                    $this->assignInfo[$property->property->getName()] = true;
-                } catch (TypeError $error) {
-                    throw new InvalidArgumentException($error->getMessage());
-                }
-            } else if ($property->property->isInitialized($this) === false) {
-                //初始化还未初始化的属性
-                if ($property->defaultValue instanceof StdClass) {
-                    $this->{$property->property->getName()} = new stdClass();
-                } else {
-                    $this->{$property->property->getName()} = $property->defaultValue;
-                }
-            }
-        }
     }
 
     /**

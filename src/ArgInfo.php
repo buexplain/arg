@@ -21,16 +21,19 @@ namespace Arg;
 
 use JetBrains\PhpStorm\ArrayShape;
 
+/**
+ * AbstractArg类的子类的属性特征集合
+ */
 class ArgInfo
 {
     /**
-     * @var array|array<string,ArgProperty>
+     * @var array|array<string,ArgProperty>|ArgProperty[]
      */
     #[ArrayShape(['*' => ArgProperty::class])]
     protected array $properties = [];
 
     /**
-     * @return array|array<string,ArgProperty>
+     * @return array|array<string,ArgProperty>|ArgProperty[]
      */
     public function getProperties(): array
     {
@@ -50,6 +53,7 @@ class ArgInfo
     final public function __clone(): void
     {
         foreach ($this->properties as $index => $property) {
+            //这里要深度克隆所有的属性特征类，因为业务上极有可能会修改ArgProperty的校验规则，进而导致常驻内存程序的出现变量污染。
             $this->properties[$index] = clone $property;
         }
     }

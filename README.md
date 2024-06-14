@@ -2,7 +2,10 @@
 
 本包解决的问题是，参数通过map传递导致参数无法被编辑器识别的问题。
 
-注意，本包只能在[hyperf](https://github.com/hyperf/hyperf)框架下使用，其它框架需要实现`Arg\AbstractArg`抽象类。
+良好的代码，从能被编辑器识别开始。
+
+注意，本包在[hyperf](https://github.com/hyperf/hyperf)框架下使用，其它框架下，需要实现`Arg\AbstractArg`
+抽象类，实现方式非常简单，可参考`Arg\BaseArgForHyperf`。
 
 安装命令：`composer require buexplain/arg`
 
@@ -110,6 +113,7 @@ class RegisterService
      */
     public static function create(RegisterArg $arg): array
     {
+        //$arg因为是一个类，所以里面有什么属性，编辑器可以识别的一清二楚。
         //开始注册逻辑，这里假设注册成功后返回账号信息
         return ['account' => $arg->account];
     }

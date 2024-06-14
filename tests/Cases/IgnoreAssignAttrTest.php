@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
-use Arg\Attr\IgnoreAssignAttr;
+use Arg\Attr\IgnoreInitAttr;
 use Arg\BaseArgForHyperf;
 use ArgTest\Auxiliary\DefaultValueArg;
 use PHPUnit\Framework\TestCase;
@@ -49,11 +49,11 @@ class IgnoreAssignAttrTest extends TestCase
                 $this->arg = new DefaultValueArg($arg);
             }
 
-            #[IgnoreAssignAttr]
+            #[IgnoreInitAttr]
             public string $color = 'blue';
             public string $width;
             public string $height;
-            #[IgnoreAssignAttr]
+            #[IgnoreInitAttr]
             public DefaultValueArg $arg;
         };
         $this->assertTrue($testData['width'] == $v->width);
