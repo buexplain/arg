@@ -22,7 +22,7 @@ namespace Arg\Attr;
 use Attribute;
 
 /**
- * 需要让本包在反射收集字段信息阶段忽略不予处理的字段，需要加上该注解
+ * 需要让本包在反射收集类的属性信息阶段忽略不予处理的字段，需要加上该注解
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class IgnoreRefAttr

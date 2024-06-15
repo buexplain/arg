@@ -22,7 +22,7 @@ namespace Arg\Attr;
 use Attribute;
 
 /**
- * 需要让本包在注入外部数据阶段忽略不予处理的字段，需要加上该注解
+ * 需要让本包在初始化外部数据阶段忽略不予处理的字段，需要加上该注解
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class IgnoreInitAttr

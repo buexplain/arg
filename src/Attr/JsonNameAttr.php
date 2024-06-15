@@ -22,7 +22,7 @@ namespace Arg\Attr;
 use Attribute;
 
 /**
- * 描述参数的json序列化与反序列化的注解
+ * 描述参数的json序列化与反序列化时候的名字的注解
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class JsonNameAttr

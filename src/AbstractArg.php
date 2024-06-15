@@ -38,7 +38,7 @@ abstract class AbstractArg implements JsonSerializable
     #[IgnoreRefAttr]
     protected ArgInfo $argInfo;
     /**
-     * @var array|array<string,bool> 记录每个字段是否是因为外部输入参数被初始化的
+     * @var array|array<string,bool>|bool[] 记录每个字段是否是因为外部输入参数被初始化的
      */
     #[IgnoreRefAttr]
     #[ArrayShape(['*' => 'bool'])]
@@ -161,13 +161,14 @@ abstract class AbstractArg implements JsonSerializable
     }
 
     /**
-     * json序列化时，只序列化被注解的字段
+     * json序列化
      * @return stdClass
      */
     public function jsonSerialize(): stdClass
     {
         $ret = new stdClass();
         foreach ($this->argInfo->getProperties() as $property) {
+            //跳过忽略序列化的属性
             if ($property->ignoreJsonSerialize) {
                 continue;
             }

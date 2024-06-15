@@ -20,12 +20,24 @@ declare(strict_types=1);
 namespace Arg;
 
 use Arg\Attr\IgnoreRefAttr;
+use JetBrains\PhpStorm\ArrayShape;
 use ReflectionClass;
+use RuntimeException;
 
 class ArgInfoFactory
 {
+    /**
+     * 缓存类的反射信息
+     * @var array|ArgInfo[]|array<string,ArgInfo>
+     */
+    #[ArrayShape(['*' => ArgInfo::class])]
     protected static array $cache = [];
 
+    /**
+     * @param string $class
+     * @return ArgInfo
+     * @throws RuntimeException
+     */
     public static function get(string $class): ArgInfo
     {
         if (isset(self::$cache[$class])) {
@@ -34,7 +46,7 @@ class ArgInfoFactory
         $argInfo = new ArgInfo();
         self::$cache[$class] = $argInfo;
         if (!class_exists($class)) {
-            return $argInfo;
+            throw new RuntimeException(sprintf('class %s not exists', $class));
         }
         $ref = new ReflectionClass($class);
         //遍历类的所有属性
