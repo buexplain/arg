@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace ArgTest\Cases;
 
-use Arg\AbstractArg;
 use Arg\BaseArgForHyperf;
 use ArgTest\Auxiliary\DefaultValueArg;
 use PHPUnit\Framework\TestCase;
@@ -98,7 +97,7 @@ class DefaultValueTest extends TestCase
         $arg = $fun($testData);
         foreach ($testData as $k => $v) {
             if ($k === 'arg') {
-                $this->assertTrue($arg->arg instanceof AbstractArg);
+                $this->assertTrue($arg->arg instanceof DefaultValueArg);
             } else {
                 $this->assertTrue($arg->{$k} === $v);
             }

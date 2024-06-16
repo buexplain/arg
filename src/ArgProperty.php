@@ -105,6 +105,10 @@ class ArgProperty
         $this->initRules();
     }
 
+    /**
+     * 初始化名字
+     * @return void
+     */
     protected function initName(): void
     {
         $this->name = $this->property->getName();
@@ -117,6 +121,10 @@ class ArgProperty
         }
     }
 
+    /**
+     * 初始化属性的校验信息
+     * @return void
+     */
     protected function initRules(): void
     {
         //收集每个属性的校验信息
@@ -132,40 +140,67 @@ class ArgProperty
         }
     }
 
+    /**
+     * 获取属性的校验信息
+     * @return array
+     */
     public function getRules(): array
     {
         return $this->rules;
     }
 
+    /**
+     * 设置属性的校验信息
+     * @param mixed $rule
+     * @return void
+     */
     public function setRules(mixed $rule): void
     {
         $this->rules[] = $rule;
     }
 
+    /**
+     * 获取属性的校验信息
+     * @return array
+     */
     public function getMessages(): array
     {
         return $this->messages;
     }
 
+    /**
+     * 设置属性的校验信息
+     * @param string $rule
+     * @param string $message
+     * @return void
+     */
     public function setMessages(string $rule, string $message): void
     {
         $this->messages[$this->property->getName() . '.' . $rule] = $message;
     }
 
+    /**
+     * 初始化特定类型的属性
+     * @return void
+     */
     protected function initNamedType(): void
     {
         $refType = $this->property->getType();
-        $this->defaultArgClass = is_subclass_of($refType->getName(), AbstractArg::class) ? $refType->getName() : '';
+        $this->defaultArgClass = $this->getDefaultArgClass($refType);
         $this->defaultValue = $this->getDefaultValueByType($refType);
     }
 
+    /**
+     * 初始化联合类型的属性
+     * @return void
+     */
     protected function initUnionType(): void
     {
         $refType = $this->property->getType();
         $argType = null;
         $defaultType = null;
         foreach ($refType->getTypes() as $type) {
-            if (is_null($argType) && is_subclass_of($type->getName(), AbstractArg::class)) {
+            if (is_null($argType) && $this->getDefaultArgClass($type)) {
                 $argType = $type;
             }
             is_null($defaultType) && $defaultType = $type;
@@ -177,6 +212,10 @@ class ArgProperty
         $this->defaultValue = $this->getDefaultValueByType($defaultType);
     }
 
+    /**
+     * 初始化属性的get set 函数
+     * @return void
+     */
     protected function initGetSet(): void
     {
         //收集每个属性的setter、getter方法
@@ -197,6 +236,31 @@ class ArgProperty
         }
     }
 
+    /**
+     * 判断属性是否是Arg类型，如果是，则返回该类名
+     * @param ReflectionNamedType $refType
+     * @return string
+     */
+    protected function getDefaultArgClass(ReflectionNamedType $refType): string
+    {
+        if (class_exists($refType->getName())) {
+            if (in_array(ArgTrait::class, class_uses($refType->getName()))) {
+                return $refType->getName();
+            }
+            foreach (class_parents($refType->getName()) as $parent) {
+                if (in_array(ArgTrait::class, class_uses($parent))) {
+                    return $refType->getName();
+                }
+            }
+        }
+        return '';
+    }
+
+    /**
+     * 根据类型获取默认值
+     * @param ReflectionNamedType $refType
+     * @return mixed
+     */
     protected function getDefaultValueByType(ReflectionNamedType $refType): mixed
     {
         if ($refType->allowsNull()) {
@@ -219,7 +283,7 @@ class ArgProperty
             $value = new StdClass();
         } elseif ($type === 'null') {
             $value = null;
-        } elseif (is_subclass_of($type, AbstractArg::class)) {
+        } elseif ($this->getDefaultArgClass($refType)) {
             $value = $type;
         } else {
             $value = null;

@@ -37,8 +37,7 @@ class BaseArgForHyperf extends AbstractArg
      */
     public function __construct(array $parameter)
     {
-        parent::__construct();
-        //这里一定要调用类属性初始化方法，对类的所有属性进行初始化
+        $this->initArgInfo();
         $this->initOrdinaryArg($parameter);
         $this->initExtendArg($parameter);
     }
@@ -69,7 +68,7 @@ class BaseArgForHyperf extends AbstractArg
             $rules,
             $messages
         );
-        //再递归校验Arg类型的属性
+        //再校验Arg类型的属性
         if ($validator->passes()) {
             $messageBag = $validator->getMessageBag();
             foreach ($this->argInfo->getProperties() as $property) {
