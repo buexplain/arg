@@ -76,15 +76,19 @@ trait ArgTrait
                 //优先使用setter方法进行注入
                 try {
                     if ($property->setter) {
+                        //setter方法存在，调用setter方法进行赋值，类型转换的权力下放给setter方法
                         call_user_func_array([$this, $property->setter], [$v]);
                     } else {
-                        //没有setter方法，直接赋值，这里可能会发生错误
-                        if ($property->defaultValue instanceof StdClass) {
-                            $this->{$property->property->getName()} = (object)$v;
-                        } else {
+                        //没有setter方法，直接赋值
+                        try {
+                            //这里可能会发生错误
                             $this->{$property->property->getName()} = $v;
+                        } catch (TypeError) {
+                            //类型错误，进行类型转换，再次赋值，依然可能出错，则抛出异常
+                            $this->{$property->property->getName()} = $property->convert($v);
                         }
                     }
+                    //记录该属性是否被外部参数初始化
                     $this->initByParameter[$property->property->getName()] = true;
                 } catch (TypeError $error) {
                     throw new InvalidArgumentException($error->getMessage());

@@ -103,4 +103,51 @@ class DefaultValueTest extends TestCase
             }
         }
     }
+
+    /**
+     * @return void
+     */
+    public function testConvertValue()
+    {
+        $fun = function (array $parameter) {
+            return new class($parameter) extends BaseArgForHyperf {
+                public string|null $string;
+                public int|null $int;
+                public float|null $float;
+                public bool|null $bool;
+                public array|null $array;
+                public stdClass|null $stdClass;
+                public object|null $object;
+            };
+        };
+        //测试类型转换是否正确
+        $testData = [
+            'string' => 1000,
+            'int' => '100',
+            'float' => '10.2',
+            'bool' => 'false',
+            'array' => 'a',
+            'object' => ['a' => 'b'],
+            'stdClass' => [1],
+        ];
+        $targetData = [
+            'string' => '1000',
+            'int' => 100,
+            'float' => 10.2,
+            'bool' => false,
+            'array' => ['a'],
+            'object' => (object)$testData['object'],
+            'stdClass' => (object)$testData['stdClass'],
+        ];
+        $arg = $fun($testData);
+        foreach ($targetData as $k => $v) {
+            if ($k === 'stdClass') {
+                $this->assertTrue($arg->stdClass == $v);
+            } elseif ($k === 'object') {
+                $this->assertTrue($arg->object == $v);
+            } else {
+                $this->assertTrue($arg->{$k} === $v);
+            }
+        }
+    }
 }

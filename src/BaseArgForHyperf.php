@@ -65,8 +65,8 @@ class BaseArgForHyperf extends AbstractArg
                 $otherArg[] = $property;
             } else {
                 $data[$property->property->getName()] = $this->{$property->property->getName()};
-                $rules[$property->property->getName()] = implode('|', $property->getRules());
-                $messages = array_merge($messages, $property->getMessages());
+                $rules[$property->property->getName()] = $property->getRules();
+                $messages += $property->getMessages();
             }
         }
         $validator = ApplicationContext::getContainer()->get(ValidatorFactoryInterface::class)->make(

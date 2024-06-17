@@ -55,6 +55,10 @@ class ArgProperty
      */
     public string $defaultArgClass = '';
     /**
+     * @var array |string[] 属性的类型
+     */
+    protected array $types = [];
+    /**
      * @var bool 是否在json_encode的时候跳过，可通过IgnoreJsonSerializeAttr注解进行配置
      */
     public bool $ignoreJsonSerialize;
@@ -71,12 +75,12 @@ class ArgProperty
      */
     public string $getter = '';
     /**
-     * @var array 属性的校验规则
+     * @var array|array<int,mixed> 属性的校验规则
      */
     protected array $rules = [];
 
     /**
-     * @var array 属性的校验规则对应的错误时提示信息
+     * @var array|array<string,string> 属性的校验规则对应的错误时提示信息
      */
     protected array $messages = [];
 
@@ -156,6 +160,14 @@ class ArgProperty
      */
     public function setRules(mixed $rule): void
     {
+        //兼容字符串格式
+        if (is_string($rule) && str_contains($rule, '|')) {
+            $rules = explode('|', $rule);
+            foreach ($rules as $rule) {
+                $this->rules[] = $rule;
+            }
+            return;
+        }
         $this->rules[] = $rule;
     }
 
@@ -180,6 +192,22 @@ class ArgProperty
     }
 
     /**
+     * 类型转换
+     * @param mixed $var
+     * @return mixed
+     */
+    public function convert(mixed $var): mixed
+    {
+        foreach ($this->types as $type) {
+            $tmp = $var;
+            if (TypeConverter::toType($tmp, $type)) {
+                return $tmp;
+            }
+        }
+        return $var;
+    }
+
+    /**
      * 初始化特定类型的属性
      * @return void
      */
@@ -187,7 +215,9 @@ class ArgProperty
     {
         $refType = $this->property->getType();
         $this->defaultArgClass = $this->getDefaultArgClass($refType);
-        $this->defaultValue = $this->getDefaultValueByType($refType);
+        $defaultValue = $this->getDefaultValueByType($refType);
+        $this->types[] = gettype($defaultValue);
+        $this->defaultValue = $refType->allowsNull() ? null : $defaultValue;
     }
 
     /**
@@ -207,9 +237,10 @@ class ArgProperty
             if ($type->allowsNull()) {
                 $defaultType = $type;
             }
+            $this->types[] = gettype($this->getDefaultValueByType($type));
         }
         $argType && $this->defaultArgClass = $argType->getName();
-        $this->defaultValue = $this->getDefaultValueByType($defaultType);
+        $this->defaultValue = $defaultType->allowsNull() ? null : $this->getDefaultValueByType($defaultType);
     }
 
     /**
@@ -263,16 +294,13 @@ class ArgProperty
      */
     protected function getDefaultValueByType(ReflectionNamedType $refType): mixed
     {
-        if ($refType->allowsNull()) {
-            return null;
-        }
         $type = $refType->getName();
         if ($type === 'string') {
             $value = '';
         } elseif ($type === 'int' || $type === 'integer') {
             $value = 0;
         } elseif ($type === 'float' || $type === 'double') {
-            $value = 0;
+            $value = 0.00;
         } elseif ($type === 'bool' || $type === 'boolean') {
             $value = false;
         } elseif ($type === 'array') {
