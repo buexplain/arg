@@ -120,6 +120,12 @@ class RegisterService
 }
 ```
 
+## 注意事项
+
+在php8.2中，支持：null、false 和 true 作为独立的类型。
+如果将一个类的属性设置为纯null、false 或 true类型，或者三者任意联合的类型，那么在注入外部参数的时候将无法正确转换为null、false
+或 true，因为在反射类属性阶段，无法识别出该属性的类型，从而无法正确转换。
+
 ## 运行测试用例
 
 Windows下：

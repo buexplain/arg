@@ -309,7 +309,7 @@ class ArgProperty
             $value = null;
         } elseif ($type === 'stdClass' || $type === 'object') {
             $value = new StdClass();
-        } elseif ($type === 'null') {
+        } elseif ($type === 'NULL' || $type === 'null') {
             $value = null;
         } elseif ($this->getDefaultArgClass($refType)) {
             $value = $type;
