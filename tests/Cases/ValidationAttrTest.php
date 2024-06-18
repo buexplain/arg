@@ -20,7 +20,10 @@ declare(strict_types=1);
 namespace ArgTest\Cases;
 
 use Arg\Attr\ValidationAttr;
+use Arg\BaseArgForHyperf;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * 测试校验规则注解
@@ -41,5 +44,39 @@ class ValidationAttrTest extends TestCase
             $this->assertTrue($at->rule === $item[0]);
             $this->assertTrue($at->message === $item[1]);
         }
+    }
+
+    /**
+     * @return void
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testSetMessageAndSetRules()
+    {
+        $v = new class([]) extends BaseArgForHyperf {
+            #[ValidationAttr('required', '不能发送空白信息')]
+            public string $text;
+        };
+        $min = '不能小于3个字符';
+        $max = '不能大于10个字符';
+        $v->getArgInfo()->setRules('text', 'min:3|max:10');
+        $v->getArgInfo()->setMessage('text', 'min', $min);
+        $v->getArgInfo()->setMessage('text', 'max', $max);
+        //测试required规则
+        $this->assertEmpty($v->text);
+        $bag = $v->validate();
+        $this->assertTrue($bag->first() === '不能发送空白信息');
+        //测试min规则
+        $v->text = 'a';
+        $bag = $v->validate();
+        $this->assertTrue($bag->first() === $min);
+        //测试max规则
+        $v->text = str_repeat('a', 11);
+        $bag = $v->validate();
+        $this->assertTrue($bag->first() === $max);
+        //测试正确的值的情况
+        $v->text = 'abc';
+        $bag = $v->validate();
+        $this->assertEmpty($bag);
     }
 }

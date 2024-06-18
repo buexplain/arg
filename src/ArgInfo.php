@@ -79,7 +79,7 @@ class ArgInfo
             $argAttr = $attribute->newInstance();
             $this->setRules($property->getName(), $argAttr->rule);
             if (!is_null($argAttr->message)) {
-                $this->setMessages($property->getName(), $argAttr->rule, $argAttr->message);
+                $this->setMessage($property->getName(), $argAttr->rule, $argAttr->message);
             }
         }
     }
@@ -128,7 +128,7 @@ class ArgInfo
      * @param string $message
      * @return void
      */
-    public function setMessages(string $propertyName, string $rule, string $message): void
+    public function setMessage(string $propertyName, string $rule, string $message): void
     {
         $this->messages[$propertyName . '.' . $rule] = $message;
     }
