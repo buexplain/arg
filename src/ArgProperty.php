@@ -21,7 +21,6 @@ namespace Arg;
 
 use Arg\Attr\IgnoreInitAttr;
 use Arg\Attr\IgnoreJsonSerializeAttr;
-use Arg\Attr\ValidationAttr;
 use Arg\Attr\JsonNameAttr;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -31,6 +30,7 @@ use stdClass;
 
 /**
  * 属性的特征类
+ * 这个类的所有数据在反射阶段初始化完成，后续的所有逻辑都不要修改这个类的数据，否则会导致变量污染
  */
 class ArgProperty
 {
@@ -74,15 +74,6 @@ class ArgProperty
      * @var string 属性的get方法
      */
     public string $getter = '';
-    /**
-     * @var array|array<int,mixed> 属性的校验规则
-     */
-    protected array $rules = [];
-
-    /**
-     * @var array|array<string,string> 属性的校验规则对应的错误时提示信息
-     */
-    protected array $messages = [];
 
     public function __construct(ReflectionClass $class, ReflectionProperty $property)
     {
@@ -105,8 +96,6 @@ class ArgProperty
         }
         //初始化属性的get set 函数
         $this->initGetSet();
-        //初始化属性的校验信息
-        $this->initRules();
     }
 
     /**
@@ -123,72 +112,6 @@ class ArgProperty
             $argAttr = $attribute->newInstance();
             $this->name = $argAttr->name;
         }
-    }
-
-    /**
-     * 初始化属性的校验信息
-     * @return void
-     */
-    protected function initRules(): void
-    {
-        //收集每个属性的校验信息
-        foreach ($this->property->getAttributes(ValidationAttr::class) as $attribute) {
-            /**
-             * @var ValidationAttr $argAttr
-             */
-            $argAttr = $attribute->newInstance();
-            $this->setRules($argAttr->rule);
-            if (!is_null($argAttr->message)) {
-                $this->setMessages($argAttr->rule, $argAttr->message);
-            }
-        }
-    }
-
-    /**
-     * 获取属性的校验信息
-     * @return array
-     */
-    public function getRules(): array
-    {
-        return $this->rules;
-    }
-
-    /**
-     * 设置属性的校验信息
-     * @param mixed $rule
-     * @return void
-     */
-    public function setRules(mixed $rule): void
-    {
-        //兼容字符串格式
-        if (is_string($rule) && str_contains($rule, '|')) {
-            $rules = explode('|', $rule);
-            foreach ($rules as $rule) {
-                $this->rules[] = $rule;
-            }
-            return;
-        }
-        $this->rules[] = $rule;
-    }
-
-    /**
-     * 获取属性的校验信息
-     * @return array
-     */
-    public function getMessages(): array
-    {
-        return $this->messages;
-    }
-
-    /**
-     * 设置属性的校验信息
-     * @param string $rule
-     * @param string $message
-     * @return void
-     */
-    public function setMessages(string $rule, string $message): void
-    {
-        $this->messages[$this->property->getName() . '.' . $rule] = $message;
     }
 
     /**

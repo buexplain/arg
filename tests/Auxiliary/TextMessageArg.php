@@ -36,6 +36,6 @@ class TextMessageArg extends BaseArgForHyperf
     public function __construct(array $parameter)
     {
         parent::__construct($parameter);
-        $this->getArgInfo()->getProperty('text')->setRules('max:120');
+        $this->getArgInfo()->setRules('text', 'max:120');
     }
 }

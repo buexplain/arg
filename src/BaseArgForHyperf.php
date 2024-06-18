@@ -54,8 +54,6 @@ class BaseArgForHyperf extends AbstractArg
          */
         //先校验普通参数
         $data = [];
-        $rules = [];
-        $messages = [];
         /**
          * @var ArgProperty[] $otherArg
          */
@@ -65,14 +63,12 @@ class BaseArgForHyperf extends AbstractArg
                 $otherArg[] = $property;
             } else {
                 $data[$property->property->getName()] = $this->{$property->property->getName()};
-                $rules[$property->property->getName()] = $property->getRules();
-                $messages += $property->getMessages();
             }
         }
         $validator = ApplicationContext::getContainer()->get(ValidatorFactoryInterface::class)->make(
             $data,
-            $rules,
-            $messages
+            $this->argInfo->getRules(),
+            $this->argInfo->getMessages()
         );
         //再校验Arg类型的属性
         $messageBag = $validator->getMessageBag();

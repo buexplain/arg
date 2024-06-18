@@ -54,11 +54,11 @@ class ValidationTest extends TestCase
         $this->assertFalse($v->agreement);
         $bag = $v->validate();
         $this->assertNotEmpty($bag);
-        $this->assertSame($v->getArgInfo()->getProperty('agreement')->getMessages()['agreement.accepted'], $bag->first());
+        $this->assertSame($v->getArgInfo()->getMessages()['agreement.accepted'], $bag->first());
         $v = $fun([]);
         $bag = $v->validate();
         $this->assertNotEmpty($bag);
-        $this->assertSame($v->getArgInfo()->getProperty('agreement')->getMessages()['agreement.accepted'], $bag->first());
+        $this->assertSame($v->getArgInfo()->getMessages()['agreement.accepted'], $bag->first());
     }
 
     /**
@@ -168,7 +168,7 @@ class ValidationTest extends TestCase
                 public function __construct(array $parameter)
                 {
                     parent::__construct($parameter);
-                    $this->getArgInfo()->getProperty('language')->setRules(Rule::in(['php', 'java', 'python']));
+                    $this->getArgInfo()->setRules('language', Rule::in(['php', 'java', 'python']));
                 }
             };
         };

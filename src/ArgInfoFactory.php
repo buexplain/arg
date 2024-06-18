@@ -34,29 +34,30 @@ class ArgInfoFactory
     protected static array $cache = [];
 
     /**
-     * @param string $class
+     * @param string $className
      * @return ArgInfo
      * @throws RuntimeException
      */
-    public static function get(string $class): ArgInfo
+    public static function get(string $className): ArgInfo
     {
-        if (isset(self::$cache[$class])) {
-            return self::$cache[$class];
+        if (isset(self::$cache[$className])) {
+            return self::$cache[$className];
         }
-        $argInfo = new ArgInfo();
-        self::$cache[$class] = $argInfo;
-        if (!class_exists($class)) {
-            throw new RuntimeException(sprintf('class %s not exists', $class));
+        if (!class_exists($className)) {
+            throw new RuntimeException(sprintf('class %s not exists', $className));
         }
-        $ref = new ReflectionClass($class);
+        $ref = new ReflectionClass($className);
+        $properties = [];
         //遍历类的所有属性
         foreach ($ref->getProperties() as $property) {
             //跳过不需要处理的字段
             if (!empty($property->getAttributes(IgnoreRefAttr::class))) {
                 continue;
             }
-            $argInfo->setProperties(new ArgProperty($ref, $property));
+            $properties[] = new ArgProperty($ref, $property);
         }
+        $argInfo = new ArgInfo($properties);
+        self::$cache[$className] = $argInfo;
         return $argInfo;
     }
 }

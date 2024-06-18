@@ -19,7 +19,9 @@ declare(strict_types=1);
 
 namespace Arg;
 
+use Arg\Attr\ValidationAttr;
 use JetBrains\PhpStorm\ArrayShape;
+use ReflectionProperty;
 
 /**
  * AbstractArg类的子类的属性特征集合
@@ -33,6 +35,28 @@ class ArgInfo
     protected array $properties = [];
 
     /**
+     * @var array|array<string,array<int,string> 属性的校验规则
+     */
+    protected array $rules = [];
+
+    /**
+     * @var array|array<string,string> 属性的校验规则对应的错误时提示信息
+     */
+    protected array $messages = [];
+
+    /**
+     * @param array|array<int,ArgProperty>|ArgProperty[] $argProperty
+     */
+    public function __construct(array $argProperty)
+    {
+        foreach ($argProperty as $item) {
+            $this->properties[$item->property->getName()] = $item;
+            //初始化属性的校验信息
+            $this->initRules($item->property);
+        }
+    }
+
+    /**
      * @return array|array<string,ArgProperty>|ArgProperty[]
      */
     public function getProperties(): array
@@ -40,21 +64,72 @@ class ArgInfo
         return $this->properties;
     }
 
-    public function getProperty(string $name): ArgProperty
+    /**
+     * 初始化属性的校验信息
+     * @param ReflectionProperty $property
+     * @return void
+     */
+    protected function initRules(ReflectionProperty $property): void
     {
-        return $this->properties[$name];
-    }
-
-    public function setProperties(ArgProperty $argProperty): void
-    {
-        $this->properties[$argProperty->property->getName()] = $argProperty;
-    }
-
-    final public function __clone(): void
-    {
-        foreach ($this->properties as $index => $property) {
-            //这里要深度克隆所有的属性特征类，因为业务上极有可能会修改ArgProperty的校验规则，进而导致常驻内存程序的出现变量污染。
-            $this->properties[$index] = clone $property;
+        //收集每个属性的校验信息
+        foreach ($property->getAttributes(ValidationAttr::class) as $attribute) {
+            /**
+             * @var ValidationAttr $argAttr
+             */
+            $argAttr = $attribute->newInstance();
+            $this->setRules($property->getName(), $argAttr->rule);
+            if (!is_null($argAttr->message)) {
+                $this->setMessages($property->getName(), $argAttr->rule, $argAttr->message);
+            }
         }
+    }
+
+    /**
+     * 获取属性的校验信息
+     * @return array
+     */
+    public function getRules(): array
+    {
+        return $this->rules;
+    }
+
+    /**
+     * 设置属性的校验信息
+     * @param string $propertyName
+     * @param mixed $rule
+     * @return void
+     */
+    public function setRules(string $propertyName, mixed $rule): void
+    {
+        //兼容字符串格式
+        if (is_string($rule) && str_contains($rule, '|')) {
+            $rules = explode('|', $rule);
+            foreach ($rules as $rule) {
+                $this->rules[$propertyName][] = $rule;
+            }
+            return;
+        }
+        $this->rules[$propertyName][] = $rule;
+    }
+
+    /**
+     * 获取属性的校验信息
+     * @return array
+     */
+    public function getMessages(): array
+    {
+        return $this->messages;
+    }
+
+    /**
+     * 设置属性的校验信息
+     * @param string $propertyName
+     * @param string $rule
+     * @param string $message
+     * @return void
+     */
+    public function setMessages(string $propertyName, string $rule, string $message): void
+    {
+        $this->messages[$propertyName . '.' . $rule] = $message;
     }
 }
