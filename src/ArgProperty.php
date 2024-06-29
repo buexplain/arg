@@ -27,6 +27,7 @@ use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
 use stdClass;
+use Throwable;
 
 /**
  * 属性的特征类
@@ -118,14 +119,24 @@ class ArgProperty
      * 类型转换
      * @param mixed $var
      * @return mixed
+     * @throws InvalidArgumentException
      */
     public function convert(mixed $var): mixed
     {
+        $exp = null;
         foreach ($this->types as $type) {
-            $tmp = $var;
-            if (TypeConverter::toType($tmp, $type)) {
-                return $tmp;
+            try {
+                $tmp = $var;
+                if (TypeConverter::toType($tmp, $type)) {
+                    return $tmp;
+                }
+            } catch (Throwable $throwable) {
+                $exp = $throwable;
             }
+        }
+        if ($exp) {
+            $property = sprintf('%s::$%s', $this->class->getName(), $this->property->getName());
+            throw new InvalidArgumentException(sprintf('%s failed on initialization %s', $exp->getMessage(), $property));
         }
         return $var;
     }

@@ -170,20 +170,20 @@ trait ArgTrait
 
     /**
      * json序列化
-     * @return stdClass
+     * @return array
      */
-    public function jsonSerialize(): stdClass
+    public function jsonSerialize(): array
     {
-        $ret = new stdClass();
+        $ret = [];
         foreach ($this->argInfo->getProperties() as $property) {
             //跳过忽略序列化的属性
             if ($property->ignoreJsonSerialize) {
                 continue;
             }
             if ($property->getter) {
-                $ret->{$property->name} = call_user_func_array([$this, $property->getter], []);
+                $ret[$property->name] = call_user_func_array([$this, $property->getter], []);
             } else {
-                $ret->{$property->name} = $this->{$property->property->getName()};
+                $ret[$property->name] = $this->{$property->property->getName()};
             }
         }
         return $ret;
