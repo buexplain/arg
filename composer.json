@@ -36,7 +36,8 @@
     "hyperf/di": "^3.1",
     "hyperf/framework": "^3.1",
     "hyperf/config": "^3.1",
-    "hyperf/engine": "^2.10"
+    "hyperf/engine": "^2.10",
+    "laravel/framework": "*"
   },
   "scripts": {
     "test": "co-phpunit --prepend tests/bootstrap.php --configuration phpunit.xml --log-events-verbose-text phpunit.log"

@@ -25,6 +25,7 @@ use ArgTest\Auxiliary\FaceMessageArg;
 use ArgTest\Auxiliary\MessageArg;
 use ArgTest\Auxiliary\SendGroupMessageArg;
 use ArgTest\Auxiliary\TextMessageArg;
+use ArgTest\Auxiliary\VoteArg;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -121,6 +122,23 @@ class BaseArgTest extends TestCase
         self::assertTrue($sendGroupMessage->sender === $testData['sender']);
         $msgBag = $sendGroupMessage->validate();
         $this->assertEmpty($msgBag->all());
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function testVoteArg(): void
+    {
+        $vote = new VoteArg([
+            'id' => '1',
+            'title' => '投票标题',
+            'options' => [
+                ['id' => 1, 'title' => '选项1'],
+                ['id' => 2, 'title' => '选项2'],
+            ]
+        ]);
+        $vote2 = new VoteArg(json_decode(json_encode($vote), true));
+        $this->assertEquals($vote, $vote2);
     }
 
     /**

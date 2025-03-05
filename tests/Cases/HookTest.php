@@ -25,12 +25,12 @@ use PHPUnit\Framework\TestCase;
 /**
  * 属性的钩子函数测试
  */
-class GetSetterTest extends TestCase
+class HookTest extends TestCase
 {
     /**
      * @return void
      */
-    public function testGSetterArg()
+    public function testHook()
     {
         $testData = [
             'data' => 'data',
@@ -38,12 +38,12 @@ class GetSetterTest extends TestCase
         $v = new class($testData) extends BaseArgForHyperf {
             public string $data;
 
-            public function getData(): string
+            protected function jsonSerializeDataHook(): string
             {
                 return $this->data . '干扰数据';
             }
 
-            public function setData(string $data): void
+            protected function initDataHook(string $data): void
             {
                 $this->data = $data . '干扰数据';
             }

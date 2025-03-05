@@ -128,7 +128,7 @@ class RegisterService
 
 ## 运行测试用例
 
-Windows下：
+Windows下用cmd跑：
 
 `swoole-cli.exe /cygdrive/c/buexplain/arg/vendor/bin/co-phpunit --prepend tests/bootstrap.php --configuration phpunit.xml --log-events-verbose-text phpunit.log`
 

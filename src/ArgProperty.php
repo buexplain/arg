@@ -68,13 +68,13 @@ class ArgProperty
      */
     public bool $ignoreInit;
     /**
-     * @var string 属性的set方法
+     * @var string 属性的init钩子
      */
-    public string $setter = '';
+    public string $initHook = '';
     /**
-     * @var string 属性的get方法
+     * @var string 属性的jsonSerialize钩子
      */
-    public string $getter = '';
+    public string $jsonSerializeHook = '';
 
     public function __construct(ReflectionClass $class, ReflectionProperty $property)
     {
@@ -96,7 +96,7 @@ class ArgProperty
             $this->initUnionType();
         }
         //初始化属性的get set 函数
-        $this->initGetSet();
+        $this->initHook();
     }
 
     /**
@@ -178,26 +178,26 @@ class ArgProperty
     }
 
     /**
-     * 初始化属性的get set 函数
+     * 初始化属性的钩子函数
      * @return void
      */
-    protected function initGetSet(): void
+    protected function initHook(): void
     {
-        //收集每个属性的setter、getter方法
-        $ter = implode(array_map(function ($word) {
+        //收集每个属性的initHook、jsonSerializeHook
+        $name = implode(array_map(function ($word) {
             return ucfirst($word);
         }, explode('_', $this->property->getName())));
-        $setter = 'set' . $ter;
-        if (method_exists($this->class->getName(), $setter)) {
-            $this->setter = $setter;
+        $initHook = 'init' . $name . 'Hook';
+        if (method_exists($this->class->getName(), $initHook)) {
+            $this->initHook = $initHook;
         } else {
-            $this->setter = '';
+            $this->initHook = '';
         }
-        $getter = 'get' . $ter;
-        if (method_exists($this->class->getName(), $getter)) {
-            $this->getter = $getter;
+        $jsonSerializeHook = 'jsonSerialize' . $name . 'Hook';
+        if (method_exists($this->class->getName(), $jsonSerializeHook)) {
+            $this->jsonSerializeHook = $jsonSerializeHook;
         } else {
-            $this->getter = '';
+            $this->jsonSerializeHook = '';
         }
     }
 

@@ -73,13 +73,13 @@ trait ArgTrait
             if (array_key_exists($property->name, $parameter)) {
                 //存在需要注入的数据
                 $v = $parameter[$property->name];
-                //优先使用setter方法进行注入
+                //优先使用initHook方法进行注入
                 try {
-                    if ($property->setter) {
-                        //setter方法存在，调用setter方法进行赋值，类型转换的权力下放给setter方法
-                        call_user_func_array([$this, $property->setter], [$v]);
+                    if ($property->initHook) {
+                        //initHook方法存在，调用initHook方法进行赋值，类型转换的权力下放给initHook方法
+                        call_user_func_array([$this, $property->initHook], [$v]);
                     } else {
-                        //没有setter方法，直接赋值
+                        //没有initHook方法，直接赋值
                         try {
                             //这里可能会发生错误
                             $this->{$property->property->getName()} = $v;
@@ -127,9 +127,9 @@ trait ArgTrait
                 if (!is_array($classParameter)) {
                     throw new InvalidArgumentException(sprintf('parameter %s must be array', $property->name));
                 }
-                if ($property->setter) {
-                    //调用setter方法
-                    call_user_func_array([$this, $property->setter], [$classParameter]);
+                if ($property->initHook) {
+                    //调用initHook方法
+                    call_user_func_array([$this, $property->initHook], [$classParameter]);
                 } else {
                     //直接赋值
                     $class = $property->defaultArgClass;
@@ -141,9 +141,9 @@ trait ArgTrait
             }
             //不存在外部入参
             $this->initByParameter[$property->property->getName()] = false;
-            if ($property->setter) {
-                //调用setter方法
-                call_user_func_array([$this, $property->setter], [[]]);
+            if ($property->initHook) {
+                //调用initHook方法
+                call_user_func_array([$this, $property->initHook], [[]]);
             } else if (is_null($property->defaultValue)) {
                 $this->{$property->property->getName()} = null;
             } else {
@@ -180,8 +180,8 @@ trait ArgTrait
             if ($property->ignoreJsonSerialize) {
                 continue;
             }
-            if ($property->getter) {
-                $ret[$property->name] = call_user_func_array([$this, $property->getter], []);
+            if ($property->jsonSerializeHook) {
+                $ret[$property->name] = call_user_func_array([$this, $property->jsonSerializeHook], []);
             } else {
                 $ret[$property->name] = $this->{$property->property->getName()};
             }

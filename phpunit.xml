@@ -7,8 +7,8 @@
         <testsuite name="DefaultValueTest Tests">
             <file>./tests/Cases/DefaultValueTest.php</file>
         </testsuite>
-        <testsuite name="GetSetterTest Tests">
-            <file>./tests/Cases/GetSetterTest.php</file>
+        <testsuite name="HookTest Tests">
+            <file>./tests/Cases/HookTest.php</file>
         </testsuite>
         <testsuite name="ValidationAttrTest Tests">
             <file>./tests/Cases/ValidationAttrTest.php</file>
