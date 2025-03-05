@@ -1,2 +1,4 @@
 /tests export-ignore
 /coverage
+phpunit.xml
+.gitignore

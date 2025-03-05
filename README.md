@@ -4,7 +4,7 @@
 
 良好的代码，从能被编辑器识别开始。
 
-注意，本包在[hyperf](https://github.com/hyperf/hyperf)框架下使用，其它框架下，需要实现`Arg\AbstractArg`
+注意，本包在[hyperf](https://github.com/hyperf/hyperf)、laravel框架下使用，其它框架下，需要实现`Arg\AbstractArg`
 抽象类，实现方式非常简单，可参考`Arg\BaseArgForHyperf`。
 
 安装命令：`composer require buexplain/arg`
